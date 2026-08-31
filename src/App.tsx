@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useSnakeGame } from "./game/useSnakeGame";
+import { LangProvider, useLang, DIFF_LABEL } from "./game/i18n";
+import type { Lang } from "./game/i18n";
 import { GameBoard } from "./components/GameBoard";
 import { TouchPad } from "./components/TouchPad";
 import {
@@ -9,8 +11,8 @@ import {
   FamePanel,
   MobileStats,
   MobileDifficulty,
+  MobileInfo,
 } from "./components/Panels";
-import { DIFFICULTIES } from "./game/engine";
 
 /* ---------- ambient background ---------- */
 
@@ -97,7 +99,13 @@ function Background() {
 
 function LogoSnake() {
   return (
-    <svg width="40" height="40" viewBox="0 0 24 24" aria-hidden style={{ animation: "floaty 5s ease-in-out infinite" }}>
+    <svg
+      width="40"
+      height="40"
+      viewBox="0 0 24 24"
+      aria-hidden
+      style={{ animation: "floaty 5s ease-in-out infinite" }}
+    >
       <rect x="1" y="16" width="5" height="5" fill="#229e74" />
       <rect x="6" y="16" width="5" height="5" fill="#2fb97f" />
       <rect x="6" y="11" width="5" height="5" fill="#43cd7c" />
@@ -135,27 +143,52 @@ function SpeakerIcon({ muted }: { muted: boolean }) {
   );
 }
 
+/* ---------- language switch ---------- */
+
+function LangSwitch() {
+  const { lang, setLang, t } = useLang();
+  const seg = (l: Lang, label: string) => {
+    const active = lang === l;
+    return (
+      <button
+        type="button"
+        onClick={() => setLang(l)}
+        aria-pressed={active}
+        className={
+          "clip-pixel-sm min-w-9 px-2 py-1.5 font-display text-[8px] transition-all duration-150 cursor-pointer " +
+          (active
+            ? "bg-lime text-[#0a1712] shadow-[0_0_16px_rgba(184,240,77,0.35)]"
+            : "text-fern hover:text-mint")
+        }
+      >
+        {label}
+      </button>
+    );
+  };
+  return (
+    <div
+      className="clip-pixel-sm flex items-center gap-0.5 border border-hedge bg-[#0e2118] p-1"
+      role="group"
+      aria-label={t.langLabel}
+    >
+      {seg("en", "EN")}
+      {seg("fa", "فا")}
+    </div>
+  );
+}
+
 /* ---------- ticker ---------- */
 
-const TIPS = [
-  "EAT THE APPLES",
-  "AVOID THE WALLS",
-  "DON'T BITE YOURSELF",
-  "SPACE PAUSES",
-  "SWIPE TO STEER ON MOBILE",
-  "BLAZING PAYS ×3",
-  "EVERY APPLE RAISES THE TEMPO",
-  "R RESTARTS INSTANTLY",
-  "M MUTES THE CABINET",
-];
-
 function Ticker() {
+  const { t } = useLang();
+  const items = [...t.ticker, ...t.ticker];
   return (
     <div className="marquee mt-8 overflow-hidden border-y border-hedge py-2.5">
-      <div className="marquee-track flex w-max items-center">
-        {[...TIPS, ...TIPS].map((tip, i) => (
+      {/* dir stays ltr so the marquee math is identical in both languages */}
+      <div className="marquee-track flex w-max items-center" dir="ltr">
+        {items.map((tip, i) => (
           <span key={i} className="flex items-center">
-            <span className="px-5 font-display text-[8px] tracking-[0.22em] text-fern">{tip}</span>
+            <span className="px-5 font-display text-[8px] text-fern">{tip}</span>
             <span className="text-[9px] text-lime/70">◆</span>
           </span>
         ))}
@@ -164,32 +197,35 @@ function Ticker() {
   );
 }
 
-/* ---------- app ---------- */
+/* ---------- cabinet ---------- */
 
-export default function App() {
+function Cabinet() {
   const game = useSnakeGame();
+  const { t, fmt } = useLang();
   const [coarse] = useState(
     () =>
       typeof window !== "undefined" &&
       window.matchMedia("(pointer: coarse)").matches
   );
-  const diff = DIFFICULTIES[game.difficulty];
 
   return (
     <div className="relative min-h-screen font-body text-fog">
       <Background />
 
-      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-6xl flex-col px-4 pb-4 pt-5 md:px-8">
+      <div
+        className="relative z-10 mx-auto flex min-h-screen w-full max-w-6xl flex-col px-4 pt-5 md:px-8"
+        style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}
+      >
         {/* header */}
         <header className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <LogoSnake />
             <div>
-              <h1 className="font-display text-base leading-none text-lime [text-shadow:0_0_18px_rgba(184,240,77,0.45)] md:text-lg">
-                SERPENT
+              <h1 className="font-title text-2xl leading-none text-lime [text-shadow:0_0_18px_rgba(184,240,77,0.45)] md:text-3xl">
+                {t.brand}
               </h1>
               <p className="mt-2 font-display text-[6px] tracking-[0.34em] text-mint md:text-[7px]">
-                ARCADE SNAKE CABINET
+                {t.tagline}
               </p>
             </div>
           </div>
@@ -199,17 +235,18 @@ export default function App() {
               <CrownIcon />
               <div className="flex items-baseline gap-2">
                 <span className="font-display text-[7px] tracking-[0.2em] text-fern">
-                  {diff.label} BEST
+                  {t[DIFF_LABEL[game.difficulty]]} · {t.best}
                 </span>
                 <span key={game.best} className="score-pop font-display text-[11px] text-amber">
-                  {game.best}
+                  {fmt(game.best)}
                 </span>
               </div>
             </div>
+            <LangSwitch />
             <button
               type="button"
               onClick={game.toggleMute}
-              aria-label={game.muted ? "Unmute" : "Mute"}
+              aria-label={game.muted ? t.unmute : t.mute}
               className={
                 "clip-pixel-sm flex h-10 w-10 items-center justify-center border transition-all duration-150 hover:-translate-y-0.5 active:translate-y-0 cursor-pointer " +
                 (game.muted
@@ -238,29 +275,30 @@ export default function App() {
             </div>
 
             {/* desktop quick keys */}
-            <div className="hidden items-center gap-5 font-display text-[7px] tracking-[0.18em] text-fern md:flex">
+            <div className="hidden flex-wrap items-center justify-center gap-x-5 gap-y-2 font-display text-[7px] tracking-[0.18em] text-fern md:flex">
               <span className="flex items-center gap-1.5">
-                <kbd className="kbd">←↑↓→</kbd> STEER
+                <kbd className="kbd">←↑↓→</kbd> {t.steer}
               </span>
               <span className="flex items-center gap-1.5">
-                <kbd className="kbd">SPC</kbd> PAUSE
+                <kbd className="kbd">SPC</kbd> {t.pauseWord}
               </span>
               <span className="flex items-center gap-1.5">
-                <kbd className="kbd">R</kbd> RESTART
+                <kbd className="kbd">R</kbd> {t.restartWord}
               </span>
               <span className="flex items-center gap-1.5">
-                <kbd className="kbd">M</kbd> MUTE
+                <kbd className="kbd">M</kbd> {t.muteWord}
               </span>
             </div>
 
             {/* mobile-only furniture */}
-            <div className="flex w-full max-w-[540px] flex-col gap-3 md:hidden">
+            <div className="flex w-full max-w-[540px] flex-col items-center gap-3 md:hidden">
               <MobileStats game={game} />
               <MobileDifficulty game={game} />
               {coarse && <TouchPad game={game} />}
               <p className="text-center font-display text-[7px] tracking-[0.24em] text-fern">
-                SWIPE ON THE BOARD — OR USE THE PAD
+                {t.swipeHint}
               </p>
+              <MobileInfo game={game} />
             </div>
           </section>
 
@@ -274,10 +312,18 @@ export default function App() {
         <Ticker />
 
         <footer className="flex items-center justify-between py-4 font-display text-[6px] tracking-[0.26em] text-fern/80 md:text-[7px]">
-          <span>SERPENT v1.0 · 21×21 PIT</span>
-          <span className="text-mint/70">EAT · GROW · SURVIVE</span>
+          <span>{t.footerLeft}</span>
+          <span className="text-mint/70">{t.footerRight}</span>
         </footer>
       </div>
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <LangProvider>
+      <Cabinet />
+    </LangProvider>
   );
 }
