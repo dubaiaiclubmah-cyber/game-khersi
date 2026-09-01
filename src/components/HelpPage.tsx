@@ -52,14 +52,6 @@ function BookIcon() {
   );
 }
 
-function PhoneIcon() {
-  return (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-      <path d="M6.6 3h3l1.5 4.5-2 1.5a12 12 0 0 0 5.9 5.9l1.5-2L21 14.4v3A3.6 3.6 0 0 1 17.4 21 14.4 14.4 0 0 1 3 6.6 3.6 3.6 0 0 1 6.6 3z" />
-    </svg>
-  );
-}
-
 function SwipeIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
@@ -86,45 +78,6 @@ function PadIcon() {
       <rect x="9" y="9" width="6" height="6" fill="currentColor" />
       <rect x="15" y="9" width="6" height="6" stroke="currentColor" strokeWidth="2" />
       <rect x="9" y="15" width="6" height="6" stroke="currentColor" strokeWidth="2" />
-    </svg>
-  );
-}
-
-/* ---------- pixel portrait of the maker ---------- */
-
-function MakerAvatar() {
-  const P = "#5b3a24"; // hair
-  const S = "#ffd9a0"; // skin
-  const D = "#12281d"; // dark
-  const L = "#b8f04d"; // shirt
-  const rects: Array<[number, number, number, number, string]> = [
-    [3, 1, 6, 1, P],
-    [2, 2, 8, 2, P],
-    [2, 4, 2, 2, P],
-    [8, 4, 2, 2, P],
-    [4, 4, 4, 1, S],
-    [2, 5, 8, 1, S],
-    [4, 5, 1, 1, D],
-    [7, 5, 1, 1, D],
-    [2, 6, 8, 1, S],
-    [3, 7, 6, 1, S],
-    [5, 7, 2, 1, P],
-    [4, 8, 4, 1, S],
-    [2, 9, 8, 1, L],
-    [1, 10, 10, 2, L],
-  ];
-  return (
-    <svg
-      viewBox="0 0 12 12"
-      width="112"
-      height="112"
-      shapeRendering="crispEdges"
-      className="drop-shadow-[0_0_18px_rgba(184,240,77,0.25)]"
-      aria-hidden
-    >
-      {rects.map(([x, y, w, h, c], i) => (
-        <rect key={i} x={x} y={y} width={w} height={h} fill={c} />
-      ))}
     </svg>
   );
 }
@@ -215,7 +168,7 @@ function Section({
 /* ---------- help page ---------- */
 
 export function HelpPage({ game, onClose }: { game: GameAPI; onClose: () => void }) {
-  const { t, fmt, lang } = useLang();
+  const { t, fmt } = useLang();
   const backRef = useRef<HTMLButtonElement>(null);
 
   /* lock page scroll + esc to close + focus */
@@ -490,46 +443,6 @@ export function HelpPage({ game, onClose }: { game: GameAPI; onClose: () => void
             </div>
           </Section>
 
-          {/* 06 — the maker */}
-          <Section num="06" title={t.s6Title} accent="#6b5320">
-            <div className="flex flex-col items-center gap-6 md:flex-row md:items-start">
-              <div className="flex shrink-0 flex-col items-center gap-3">
-                <div className="clip-pixel-sm border-2 border-[#6b5320] bg-[#0a1712] p-3">
-                  <MakerAvatar />
-                </div>
-                <span className="clip-pixel-sm bg-amber px-2.5 py-1 font-display text-[7px] tracking-[0.14em] text-[#0a1712]">
-                  {lang === "fa" ? "۱۲ ساله" : "AGE 12"}
-                </span>
-              </div>
-
-              <div className="flex w-full flex-col items-center gap-4 text-center md:items-start md:text-start">
-                <span className="clip-pixel-sm border border-teal/50 px-2.5 py-1 font-display text-[7px] tracking-[0.2em] text-teal">
-                  {t.makerKicker}
-                </span>
-                <div>
-                  <p className="font-title text-2xl leading-snug text-fog md:text-3xl">{t.makerLine1}</p>
-                  <p className="mt-2 text-sm leading-6 text-mint md:text-[15px]">{t.makerLine2}</p>
-                </div>
-
-                <div className="mt-2 flex flex-col items-center gap-3 md:items-start">
-                  <a
-                    href="tel:00971551544988"
-                    className="clip-pixel-sm flex items-center gap-2.5 bg-amber px-6 py-3.5 font-display text-[10px] text-[#0a1712] shadow-[0_0_28px_rgba(255,201,77,0.3)] transition-all duration-150 hover:-translate-y-0.5 hover:brightness-110 active:translate-y-0.5 active:brightness-95 cursor-pointer"
-                  >
-                    <PhoneIcon />
-                    {t.makerContact}
-                  </a>
-                  <a
-                    href="tel:00971551544988"
-                    dir="ltr"
-                    className="font-display text-sm tracking-[0.12em] text-amber transition-colors hover:text-lime md:text-base"
-                  >
-                    {t.makerPhone}
-                  </a>
-                </div>
-              </div>
-            </div>
-          </Section>
         </div>
 
         {/* footer of the manual */}

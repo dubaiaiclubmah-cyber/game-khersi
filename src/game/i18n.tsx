@@ -82,6 +82,8 @@ export interface Dict {
   /* help page */
   helpBtn: string;
   helpBack: string;
+  aboutBtn: string;
+  aboutBack: string;
   helpKicker: string;
   helpTitle: string;
   helpIntro: string;
@@ -219,6 +221,8 @@ const en: Dict = {
   /* help page */
   helpBtn: "HELP",
   helpBack: "BACK TO THE GAME",
+  aboutBtn: "CREATOR",
+  aboutBack: "BACK TO THE GAME",
   helpKicker: "THE FIELD MANUAL",
   helpTitle: "HOW TO PLAY",
   helpIntro:
@@ -354,6 +358,8 @@ const fa: Dict = {
   /* help page */
   helpBtn: "راهنما",
   helpBack: "بازگشت به بازی",
+  aboutBtn: "درباره سازنده",
+  aboutBack: "بازگشت به بازی",
   helpKicker: "دفترچه‌ی راهنما",
   helpTitle: "چطور بازی کنیم؟",
   helpIntro:
