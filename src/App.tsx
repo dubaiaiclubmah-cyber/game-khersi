@@ -4,6 +4,7 @@ import { LangProvider, useLang, DIFF_LABEL } from "./game/i18n";
 import type { Lang } from "./game/i18n";
 import { GameBoard } from "./components/GameBoard";
 import { TouchPad } from "./components/TouchPad";
+import { HelpPage } from "./components/HelpPage";
 import {
   DifficultyPanel,
   HelpPanel,
@@ -202,11 +203,17 @@ function Ticker() {
 function Cabinet() {
   const game = useSnakeGame();
   const { t, fmt } = useLang();
+  const [showHelp, setShowHelp] = useState(false);
   const [coarse] = useState(
     () =>
       typeof window !== "undefined" &&
       window.matchMedia("(pointer: coarse)").matches
   );
+
+  const openHelp = () => {
+    if (game.status === "playing") game.togglePause();
+    setShowHelp(true);
+  };
 
   return (
     <div className="relative min-h-screen font-body text-fog">
@@ -242,6 +249,18 @@ function Cabinet() {
                 </span>
               </div>
             </div>
+            <button
+              type="button"
+              onClick={openHelp}
+              className="clip-pixel-sm flex h-10 items-center gap-2 border border-hedge bg-[#0e2118] px-3 text-teal transition-all duration-150 hover:-translate-y-0.5 hover:text-fog active:translate-y-0 cursor-pointer"
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden>
+                <path d="M4 4h9a3 3 0 0 1 3 3v13H7a3 3 0 0 1-3-3V4z" stroke="currentColor" strokeWidth="2" />
+                <path d="M16 8h4v12h-9" stroke="currentColor" strokeWidth="2" />
+                <path d="M8 9h5M8 12h5" stroke="currentColor" strokeWidth="2" strokeLinecap="square" />
+              </svg>
+              <span className="font-display text-[8px] tracking-[0.12em]">{t.helpBtn}</span>
+            </button>
             <LangSwitch />
             <button
               type="button"
@@ -311,11 +330,23 @@ function Cabinet() {
 
         <Ticker />
 
-        <footer className="flex items-center justify-between py-4 font-display text-[6px] tracking-[0.26em] text-fern/80 md:text-[7px]">
+        <footer className="flex flex-wrap items-center justify-between gap-2 py-4 font-display text-[6px] tracking-[0.26em] text-fern/80 md:text-[7px]">
           <span>{t.footerLeft}</span>
-          <span className="text-mint/70">{t.footerRight}</span>
+          <span className="flex items-center gap-2">
+            <span className="text-mint/70">{t.footerRight}</span>
+            <span aria-hidden className="text-hedge">·</span>
+            <button
+              type="button"
+              onClick={openHelp}
+              className="text-amber underline decoration-dotted underline-offset-4 transition-colors hover:text-lime cursor-pointer"
+            >
+              {t.footerAbout}
+            </button>
+          </span>
         </footer>
       </div>
+
+      {showHelp && <HelpPage game={game} onClose={() => setShowHelp(false)} />}
     </div>
   );
 }

@@ -149,6 +149,14 @@ body {
   animation: pulse-dot 1.5s ease-in-out infinite;
 }
 
+@keyframes crawl {
+  0% { left: -28%; }
+  100% { left: 108%; }
+}
+.crawl-snake {
+  animation: crawl 7s linear infinite;
+}
+
 @keyframes blink-cursor {
   0%, 55% { opacity: 1; }
   56%, 100% { opacity: 0; }
@@ -163,6 +171,10 @@ body {
   .pulse-dot,
   .score-pop {
     animation: none;
+  }
+  .crawl-snake {
+    animation: none;
+    left: 36%;
   }
 }
 
