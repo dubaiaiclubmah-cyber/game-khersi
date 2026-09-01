@@ -10,8 +10,6 @@ export type DiffKey = "chill" | "classic" | "blazing";
 
 export interface Difficulty {
   key: DiffKey;
-  label: string;
-  tag: string;
   /** ms per step at start */
   stepMs: number;
   /** fastest allowed step */
@@ -24,36 +22,9 @@ export interface Difficulty {
 }
 
 export const DIFFICULTIES: Record<DiffKey, Difficulty> = {
-  chill: {
-    key: "chill",
-    label: "CHILL",
-    tag: "Slow cruise · ×1 points",
-    stepMs: 168,
-    minMs: 122,
-    speedup: 1.5,
-    mult: 1,
-    color: "#4de3c2",
-  },
-  classic: {
-    key: "classic",
-    label: "CLASSIC",
-    tag: "The 1997 Nokia pace · ×2",
-    stepMs: 118,
-    minMs: 82,
-    speedup: 2,
-    mult: 2,
-    color: "#ffc94d",
-  },
-  blazing: {
-    key: "blazing",
-    label: "BLAZING",
-    tag: "Full chaos · ×3 points",
-    stepMs: 82,
-    minMs: 54,
-    speedup: 3,
-    mult: 3,
-    color: "#ff6b5e",
-  },
+  chill: { key: "chill", stepMs: 168, minMs: 122, speedup: 1.5, mult: 1, color: "#4de3c2" },
+  classic: { key: "classic", stepMs: 118, minMs: 82, speedup: 2, mult: 2, color: "#ffc94d" },
+  blazing: { key: "blazing", stepMs: 82, minMs: 54, speedup: 3, mult: 3, color: "#ff6b5e" },
 };
 
 export const OPPOSITE: Record<Dir, Dir> = {
@@ -79,8 +50,8 @@ export function makeSnake(): Cell[] {
   ];
 }
 
-export function randomFood(snake: Cell[]): Cell | null {
-  const taken = new Set(snake.map((s) => s.x + "," + s.y));
+export function randomFree(exclude: Cell[]): Cell | null {
+  const taken = new Set(exclude.map((c) => c.x + "," + c.y));
   const free: Cell[] = [];
   for (let y = 0; y < GRID; y++) {
     for (let x = 0; x < GRID; x++) {
@@ -89,4 +60,8 @@ export function randomFood(snake: Cell[]): Cell | null {
   }
   if (free.length === 0) return null;
   return free[Math.floor(Math.random() * free.length)];
+}
+
+export function randomFood(snake: Cell[]): Cell | null {
+  return randomFree(snake);
 }

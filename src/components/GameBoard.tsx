@@ -56,6 +56,7 @@ export function GameBoard({ game }: { game: GameAPI }) {
     win,
     difficulty,
     eaten,
+    stars,
     start,
     togglePause,
   } = game;
@@ -65,8 +66,7 @@ export function GameBoard({ game }: { game: GameAPI }) {
   const meta = STATUS_COLOR[status];
   const coarse = useMemo(
     () =>
-      typeof window !== "undefined" &&
-      window.matchMedia("(pointer: coarse)").matches,
+      typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches,
     []
   );
 
@@ -99,6 +99,7 @@ export function GameBoard({ game }: { game: GameAPI }) {
             </span>
           </div>
           <div className="flex items-center gap-3 font-display text-[8px] tracking-[0.14em]">
+            <span className="text-amber">★ {fmt(stars)}</span>
             <span style={{ color: diff.color }}>×{fmt(diff.mult)}</span>
             <span className="text-fern">
               {t.lenShort} {fmt(String(length).padStart(2, "0"))}
@@ -171,8 +172,7 @@ export function GameBoard({ game }: { game: GameAPI }) {
               <div className="rise-in-delayed flex flex-col items-center gap-3.5">
                 <h2
                   className={
-                    "font-title text-2xl md:text-3xl " +
-                    (win ? "text-lime" : "text-coral")
+                    "font-title text-2xl md:text-3xl " + (win ? "text-lime" : "text-coral")
                   }
                 >
                   {win ? t.overWin : t.overLose}
@@ -201,6 +201,7 @@ export function GameBoard({ game }: { game: GameAPI }) {
                 <p className="text-xs text-mint">
                   {applesTxt} · {t.lengthWord} {fmt(length)} · {t[DIFF_LABEL[difficulty]]} ×
                   {fmt(diff.mult)}
+                  {stars > 0 && <span className="text-amber"> · ★ {fmt(stars)}</span>}
                 </p>
 
                 <button type="button" onClick={() => start()} className={PIXEL_BTN}>

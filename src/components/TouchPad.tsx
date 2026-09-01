@@ -18,12 +18,7 @@ function Chevron({ rotate }: { rotate: number }) {
       style={{ transform: `rotate(${rotate}deg)` }}
       aria-hidden
     >
-      <path
-        d="M5 15 L12 8 L19 15"
-        stroke="currentColor"
-        strokeWidth="3"
-        strokeLinecap="square"
-      />
+      <path d="M5 15 L12 8 L19 15" stroke="currentColor" strokeWidth="3" strokeLinecap="square" />
     </svg>
   );
 }

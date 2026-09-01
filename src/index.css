@@ -3,6 +3,7 @@
 @theme {
   --font-display: "Press Start 2P", "Courier New", monospace;
   --font-body: "Space Grotesk", "Trebuchet MS", sans-serif;
+  --font-title: "Press Start 2P", "Courier New", monospace;
   --color-pit: #06110c;
   --color-moss: #0b1a13;
   --color-hedge: #1f3b2c;
@@ -13,6 +14,12 @@
   --color-teal: #4de3c2;
   --color-amber: #ffc94d;
   --color-coral: #ff6b5e;
+}
+
+/* Persian type — Lalezar for titles, Vazirmatn for body */
+html[lang="fa"] {
+  --font-body: "Vazirmatn", "Space Grotesk", "Tahoma", sans-serif;
+  --font-title: "Lalezar", "Vazirmatn", sans-serif;
 }
 
 html,
@@ -43,6 +50,16 @@ body {
 ::-webkit-scrollbar-thumb {
   background: #1f3b2c;
   border: 2px solid #08140e;
+}
+
+.font-title {
+  font-family: var(--font-title);
+}
+
+/* Persian text must never be letter-spaced (it breaks the joining) */
+html[lang="fa"] .font-display {
+  letter-spacing: 0.02em !important;
+  font-size: 1.06em;
 }
 
 /* ---- pixel-notched corners (the site-wide shape language) ---- */
@@ -133,6 +150,22 @@ body {
   animation: rise-in 0.45s 0.3s cubic-bezier(0.2, 1.4, 0.4, 1) both;
 }
 
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(-16px) scale(0.92); }
+  to { opacity: 1; transform: none; }
+}
+.toast-in {
+  animation: toast-in 0.34s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+}
+
+@keyframes crawl {
+  0% { left: -28%; }
+  100% { left: 108%; }
+}
+.crawl-snake {
+  animation: crawl 7s linear infinite;
+}
+
 @keyframes wiggle {
   0%, 100% { transform: rotate(-2.5deg); }
   50% { transform: rotate(2.5deg); }
@@ -147,14 +180,6 @@ body {
 }
 .pulse-dot {
   animation: pulse-dot 1.5s ease-in-out infinite;
-}
-
-@keyframes crawl {
-  0% { left: -28%; }
-  100% { left: 108%; }
-}
-.crawl-snake {
-  animation: crawl 7s linear infinite;
 }
 
 @keyframes blink-cursor {
@@ -176,70 +201,4 @@ body {
     animation: none;
     left: 36%;
   }
-}
-
-/* ---------------- Persian (RTL) typography ---------------- */
-
-.font-title {
-  font-family: var(--font-display);
-}
-
-html[lang="fa"] body,
-html[lang="fa"] .font-body {
-  font-family: "Vazirmatn", "Segoe UI", Tahoma, sans-serif;
-}
-
-/* small labels: Vazirmatn heavy instead of the Latin pixel face */
-html[lang="fa"] .font-display {
-  font-family: "Vazirmatn", Tahoma, sans-serif;
-  font-weight: 800;
-  letter-spacing: 0 !important;
-}
-
-/* big display words: Lalezar */
-html[lang="fa"] .font-title {
-  font-family: "Lalezar", "Vazirmatn", Tahoma, sans-serif;
-  font-weight: 400;
-  letter-spacing: 0 !important;
-  line-height: 1.35;
-}
-
-/* letter-spacing breaks Persian joining — kill it everywhere */
-html[lang="fa"] [class*="tracking-"] {
-  letter-spacing: 0 !important;
-}
-
-html[lang="fa"] .kbd {
-  font-family: "Vazirmatn", Tahoma, sans-serif;
-  font-weight: 700;
-}
-
-/* Persian glyphs need a slightly bigger floor than the pixel face */
-html[lang="fa"] .text-\[6px\] { font-size: 9px; }
-html[lang="fa"] .text-\[7px\] { font-size: 10px; }
-html[lang="fa"] .text-\[8px\] { font-size: 11px; }
-html[lang="fa"] .text-\[9px\] { font-size: 12px; }
-
-/* ---------------- mobile game feel ---------------- */
-
-html,
-body {
-  overscroll-behavior-y: none;
-}
-
-body {
-  touch-action: manipulation;
-}
-
-details > summary {
-  list-style: none;
-}
-details > summary::-webkit-details-marker {
-  display: none;
-}
-details[open] .acc-chev {
-  transform: rotate(180deg);
-}
-.acc-chev {
-  transition: transform 0.2s ease;
 }

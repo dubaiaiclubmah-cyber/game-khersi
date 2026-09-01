@@ -11,6 +11,7 @@ import {
   HelpPanel,
   StatsPanel,
   FamePanel,
+  MedalsPanel,
   MobileStats,
   MobileDifficulty,
   MobileInfo,
@@ -146,6 +147,17 @@ function SpeakerIcon({ muted }: { muted: boolean }) {
   );
 }
 
+function StarBurstIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden>
+      <path
+        d="M12 2 L14.6 8.6 L21.8 9 L16.2 13.4 L18 20.4 L12 16.4 L6 20.4 L7.8 13.4 L2.2 9 L9.4 8.6 Z"
+        fill="#ffc94d"
+      />
+    </svg>
+  );
+}
+
 /* ---------- language switch ---------- */
 
 function LangSwitch() {
@@ -208,9 +220,7 @@ function Cabinet() {
   const [showHelp, setShowHelp] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
   const [coarse] = useState(
-    () =>
-      typeof window !== "undefined" &&
-      window.matchMedia("(pointer: coarse)").matches
+    () => typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches
   );
 
   const openHelp = () => {
@@ -350,6 +360,7 @@ function Cabinet() {
           <aside className="order-3 hidden flex-col gap-5 md:flex">
             <StatsPanel game={game} />
             <FamePanel game={game} />
+            <MedalsPanel game={game} />
           </aside>
         </main>
 
@@ -363,12 +374,30 @@ function Cabinet() {
             <button
               type="button"
               onClick={openAbout}
-              className="text-amber underline decoration-dotted underline-offset-4 transition-colors hover:text-lime cursor-pointer"
+              className="cursor-pointer text-amber underline decoration-dotted underline-offset-4 transition-colors hover:text-lime"
             >
               {t.footerAbout}
             </button>
           </span>
         </footer>
+      </div>
+
+      {/* medal unlock toasts */}
+      <div className="pointer-events-none fixed left-1/2 top-3 z-[70] flex w-full max-w-sm -translate-x-1/2 flex-col items-center gap-2 px-3">
+        {game.toasts.map((toast) => {
+          const T = t as unknown as Record<string, string>;
+          return (
+            <div
+              key={toast.key}
+              className="toast-in clip-pixel-sm flex items-center gap-2.5 border border-amber/60 bg-[#1d1708f2] px-4 py-2.5 shadow-[0_0_26px_rgba(255,201,77,0.28)]"
+            >
+              <StarBurstIcon />
+              <span className="font-display text-[8px] text-amber">
+                {t.unlockToast.replace("{name}", T[toast.nameKey] ?? "")}
+              </span>
+            </div>
+          );
+        })}
       </div>
 
       {showHelp && <HelpPage game={game} onClose={() => setShowHelp(false)} />}

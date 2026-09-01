@@ -58,6 +58,10 @@ export const sfx = {
   eat() {
     beep(540, 0.09, "square", 0.05, 260);
   },
+  star() {
+    beep(740, 0.09, "square", 0.05, 240);
+    setTimeout(() => beep(1180, 0.15, "square", 0.05, 180), 95);
+  },
   die() {
     beep(320, 0.42, "sawtooth", 0.055, -270);
   },

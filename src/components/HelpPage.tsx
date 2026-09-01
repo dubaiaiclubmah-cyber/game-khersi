@@ -165,7 +165,7 @@ function Section({
   );
 }
 
-/* ---------- help page ---------- */
+/* ---------- help page (user guide only) ---------- */
 
 export function HelpPage({ game, onClose }: { game: GameAPI; onClose: () => void }) {
   const { t, fmt } = useLang();
@@ -202,10 +202,10 @@ export function HelpPage({ game, onClose }: { game: GameAPI; onClose: () => void
   ];
 
   const outputs = [
-    { label: t.outFinal, v: fmt(120), c: "#ffc94d" },
-    { label: t.outLen, v: fmt(15), c: "#d7f0e0" },
-    { label: t.outApples, v: fmt(12), c: "#ff6b5e" },
-    { label: t.outTempo, v: `${t.lv} ${fmt(3)}`, c: "#4de3c2" },
+    { label: t.finalScore, v: fmt(120), c: "#ffc94d" },
+    { label: t.length, v: fmt(15), c: "#d7f0e0" },
+    { label: t.applesLabel, v: fmt(12), c: "#ff6b5e" },
+    { label: t.tempo, v: `${t.lv} ${fmt(3)}`, c: "#4de3c2" },
   ];
 
   const settings: Array<[string, string]> = [
@@ -224,23 +224,20 @@ export function HelpPage({ game, onClose }: { game: GameAPI; onClose: () => void
         <div
           className="absolute inset-0"
           style={{
-            background:
-              "radial-gradient(900px 560px at 50% -6%, #0d2b1e 0%, rgba(13,43,30,0) 60%)",
+            background: "radial-gradient(900px 560px at 50% -6%, #0d2b1e 0%, rgba(13,43,30,0) 60%)",
           }}
         />
         <div
           className="absolute -left-40 top-1/4 h-[44vmax] w-[44vmax] rounded-full"
           style={{
-            background:
-              "radial-gradient(circle, rgba(77,227,194,0.10) 0%, rgba(77,227,194,0) 62%)",
+            background: "radial-gradient(circle, rgba(77,227,194,0.10) 0%, rgba(77,227,194,0) 62%)",
             animation: "drift-a 18s ease-in-out infinite",
           }}
         />
         <div
           className="absolute -right-44 bottom-0 h-[40vmax] w-[40vmax] rounded-full"
           style={{
-            background:
-              "radial-gradient(circle, rgba(255,201,77,0.09) 0%, rgba(255,201,77,0) 60%)",
+            background: "radial-gradient(circle, rgba(255,201,77,0.09) 0%, rgba(255,201,77,0) 60%)",
             animation: "drift-b 22s ease-in-out infinite",
           }}
         />
@@ -267,9 +264,7 @@ export function HelpPage({ game, onClose }: { game: GameAPI; onClose: () => void
             </svg>
             {t.helpBack}
           </button>
-          <span className="font-display text-[8px] tracking-[0.24em] text-fern">
-            {t.helpKicker}
-          </span>
+          <span className="font-display text-[8px] tracking-[0.24em] text-fern">{t.helpKicker}</span>
         </div>
       </div>
 
@@ -351,10 +346,7 @@ export function HelpPage({ game, onClose }: { game: GameAPI; onClose: () => void
             <p className="text-sm leading-7 text-fog/90 md:text-[15px]">{t.s4Body}</p>
 
             {/* formula — math reads LTR in both languages */}
-            <div
-              dir="ltr"
-              className="mt-5 flex flex-wrap items-stretch justify-center gap-2 md:gap-3"
-            >
+            <div dir="ltr" className="mt-5 flex flex-wrap items-stretch justify-center gap-2 md:gap-3">
               {[
                 { top: fmt(10), label: t.s4Formula, c: "#b8f04d" },
                 { top: "×", label: "", c: "#567e69" },
@@ -369,9 +361,7 @@ export function HelpPage({ game, onClose }: { game: GameAPI; onClose: () => void
                   >
                     {chip.top}
                   </span>
-                  <span className="font-display text-[6px] tracking-[0.14em] text-fern">
-                    {chip.label}
-                  </span>
+                  <span className="font-display text-[6px] tracking-[0.14em] text-fern">{chip.label}</span>
                 </div>
               ))}
             </div>
@@ -404,9 +394,7 @@ export function HelpPage({ game, onClose }: { game: GameAPI; onClose: () => void
                   key={i}
                   className="clip-pixel-sm flex flex-col gap-1.5 border border-hedge bg-[#0a1712] px-4 py-3 transition-colors hover:border-mint/40 sm:flex-row sm:items-center sm:gap-4"
                 >
-                  <span
-                    className="w-28 shrink-0 font-display text-[8px] tracking-[0.16em] text-amber"
-                  >
+                  <span className="w-28 shrink-0 font-display text-[8px] tracking-[0.16em] text-amber">
                     {name}
                   </span>
                   <span className="text-[13px] leading-5 text-mint">{where}</span>
@@ -428,10 +416,7 @@ export function HelpPage({ game, onClose }: { game: GameAPI; onClose: () => void
                       boxShadow: active ? `inset 0 0 0 1px ${d.color}` : undefined,
                     }}
                   >
-                    <span
-                      className="font-display text-[7px]"
-                      style={{ color: active ? d.color : "#567e69" }}
-                    >
+                    <span className="font-display text-[7px]" style={{ color: active ? d.color : "#567e69" }}>
                       {t[DIFF_LABEL[key]]}
                     </span>
                     <span className="font-display text-[7px]" style={{ color: active ? d.color : "#3f5c4c" }}>
@@ -442,7 +427,6 @@ export function HelpPage({ game, onClose }: { game: GameAPI; onClose: () => void
               })}
             </div>
           </Section>
-
         </div>
 
         {/* footer of the manual */}

@@ -1,16 +1,16 @@
-import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import type { DiffKey } from "./engine";
 
 export type Lang = "en" | "fa";
 
+const FA_DIGITS = ["۰", "۱", "۲", "۳", "۴", "۵", "۶", "۷", "۸", "۹"];
+
 export interface Dict {
-  /* brand */
   brand: string;
   tagline: string;
   langLabel: string;
   ticker: string[];
-  /* hud / labels */
   best: string;
   score: string;
   lenShort: string;
@@ -21,22 +21,40 @@ export interface Dict {
   applesMany: string;
   tempo: string;
   lv: string;
-  controls: string;
-  scoreboard: string;
-  fame: string;
   selectSpeed: string;
   diffNote: string;
+  diffChill: string;
+  diffClassic: string;
+  diffBlazing: string;
+  diffChillTag: string;
+  diffClassicTag: string;
+  diffBlazingTag: string;
+  scoreboard: string;
+  fame: string;
   fameNote: string;
-  unmute: string;
-  mute: string;
+  controls: string;
+  helpSteer: string;
+  helpWasd: string;
+  helpPause: string;
+  helpEnter: string;
+  helpRestart: string;
+  helpMute: string;
+  swipeHint: string;
   steer: string;
   pauseWord: string;
   restartWord: string;
   muteWord: string;
+  mute: string;
+  unmute: string;
   footerLeft: string;
   footerRight: string;
-  swipeHint: string;
-  /* status */
+  footerAbout: string;
+  playPause: string;
+  dirUp: string;
+  dirDown: string;
+  dirLeft: string;
+  dirRight: string;
+  /* status bar */
   st_menu: string;
   st_playing: string;
   st_paused: string;
@@ -45,45 +63,26 @@ export interface Dict {
   menuTitle: string;
   menuCopy: string;
   menuBtn: string;
-  menuHintTouch: string;
   menuHintKey: string;
+  menuHintTouch: string;
   pausedTitle: string;
   pausedCopy: string;
   resumeBtn: string;
-  pauseHintTouch: string;
   pauseHintKey: string;
+  pauseHintTouch: string;
   overWin: string;
   overLose: string;
   newRecord: string;
   finalScore: string;
   playAgain: string;
-  overHintTouch: string;
   overHintKey: string;
-  /* touchpad */
-  dirUp: string;
-  dirDown: string;
-  dirLeft: string;
-  dirRight: string;
-  playPause: string;
-  /* desktop help rows */
-  helpSteer: string;
-  helpWasd: string;
-  helpPause: string;
-  helpEnter: string;
-  helpRestart: string;
-  helpMute: string;
-  /* difficulties */
-  diffChill: string;
-  diffClassic: string;
-  diffBlazing: string;
-  tagChill: string;
-  tagClassic: string;
-  tagBlazing: string;
-  /* help page */
+  overHintTouch: string;
+  /* header */
   helpBtn: string;
-  helpBack: string;
   aboutBtn: string;
+  helpBack: string;
   aboutBack: string;
+  /* help page */
   helpKicker: string;
   helpTitle: string;
   helpIntro: string;
@@ -103,10 +102,6 @@ export interface Dict {
   s4Formula: string;
   s4Times: string;
   s4Result: string;
-  outFinal: string;
-  outLen: string;
-  outApples: string;
-  outTempo: string;
   s4Save: string;
   s5Title: string;
   s5n1: string;
@@ -117,29 +112,53 @@ export interface Dict {
   s5w3: string;
   s5n4: string;
   s5w4: string;
-  s6Title: string;
+  helpEsc: string;
+  /* about page */
   makerKicker: string;
   makerLine1: string;
   makerLine2: string;
   makerContact: string;
   makerPhone: string;
-  helpEsc: string;
-  footerAbout: string;
+  /* medals & history */
+  historyTitle: string;
+  medalsTitle: string;
+  medalsNote: string;
+  unlockToast: string;
+  m1n: string;
+  m1d: string;
+  m2n: string;
+  m2d: string;
+  m3n: string;
+  m3d: string;
+  m4n: string;
+  m4d: string;
+  m5n: string;
+  m5d: string;
+  m6n: string;
+  m6d: string;
+  m7n: string;
+  m7d: string;
+  m8n: string;
+  m8d: string;
+  m9n: string;
+  m9d: string;
+  m10n: string;
+  m10d: string;
 }
 
-export const DIFF_LABEL: Record<DiffKey, "diffChill" | "diffClassic" | "diffBlazing"> = {
+export const DIFF_LABEL: Record<DiffKey, keyof Dict> = {
   chill: "diffChill",
   classic: "diffClassic",
   blazing: "diffBlazing",
 };
 
-export const DIFF_TAG: Record<DiffKey, "tagChill" | "tagClassic" | "tagBlazing"> = {
-  chill: "tagChill",
-  classic: "tagClassic",
-  blazing: "tagBlazing",
+export const DIFF_TAG: Record<DiffKey, keyof Dict> = {
+  chill: "diffChillTag",
+  classic: "diffClassicTag",
+  blazing: "diffBlazingTag",
 };
 
-const en: Dict = {
+const EN: Dict = {
   brand: "SERPENT",
   tagline: "ARCADE SNAKE CABINET",
   langLabel: "Language",
@@ -151,6 +170,7 @@ const en: Dict = {
     "SWIPE TO STEER ON MOBILE",
     "BLAZING PAYS ×3",
     "EVERY APPLE RAISES THE TEMPO",
+    "GOLDEN STAR = 50× TIER",
     "R RESTARTS INSTANTLY",
     "M MUTES THE CABINET",
   ],
@@ -164,119 +184,139 @@ const en: Dict = {
   applesMany: "apples",
   tempo: "TEMPO",
   lv: "LV",
-  controls: "CONTROLS",
-  scoreboard: "SCOREBOARD",
-  fame: "HALL OF FAME",
   selectSpeed: "SELECT SPEED",
   diffNote: "Switching resets the board — your records are kept per tier.",
+  diffChill: "CHILL",
+  diffClassic: "CLASSIC",
+  diffBlazing: "BLAZING",
+  diffChillTag: "Slow cruise · ×1 points",
+  diffClassicTag: "The 1997 Nokia pace · ×2",
+  diffBlazingTag: "Full chaos · ×3 points",
+  scoreboard: "SCOREBOARD",
+  fame: "HALL OF FAME",
   fameNote: "Records live in this browser. Set a mark, then defend it.",
-  unmute: "Unmute",
-  mute: "Mute",
-  steer: "STEER",
-  pauseWord: "PAUSE",
-  restartWord: "RESTART",
-  muteWord: "MUTE",
-  footerLeft: "SERPENT v1.0 · 21×21 PIT",
-  footerRight: "EAT · GROW · SURVIVE",
-  swipeHint: "SWIPE ON THE BOARD — OR USE THE PAD",
-  st_menu: "READY",
-  st_playing: "LIVE",
-  st_paused: "HOLD",
-  st_over: "DOWN",
-  menuTitle: "READY, PLAYER?",
-  menuCopy:
-    "Eat apples. Grow long. The walls — and your own tail — are fatal. Speed climbs with every bite.",
-  menuBtn: "INSERT COIN",
-  menuHintTouch: "TAP OR SWIPE TO LAUNCH",
-  menuHintKey: "SPACE · ENTER · ANY ARROW",
-  pausedTitle: "PAUSED",
-  pausedCopy: "The serpent waits… score {score} · length {len}",
-  resumeBtn: "RESUME",
-  pauseHintTouch: "TAP THE BOARD TO CONTINUE",
-  pauseHintKey: "SPACE TO RESUME",
-  overWin: "BOARD CLEARED!",
-  overLose: "GAME OVER",
-  newRecord: "NEW RECORD",
-  finalScore: "FINAL SCORE",
-  playAgain: "PLAY AGAIN",
-  overHintTouch: "TAP TO RUN IT BACK",
-  overHintKey: "PRESS ENTER",
-  dirUp: "Up",
-  dirDown: "Down",
-  dirLeft: "Left",
-  dirRight: "Right",
-  playPause: "Play / Pause",
+  controls: "CONTROLS",
   helpSteer: "steer the serpent",
   helpWasd: "also steers",
   helpPause: "pause / resume",
   helpEnter: "start / restart",
   helpRestart: "instant restart",
   helpMute: "mute the cabinet",
-  diffChill: "CHILL",
-  diffClassic: "CLASSIC",
-  diffBlazing: "BLAZING",
-  tagChill: "Slow cruise · ×1 points",
-  tagClassic: "The 1997 Nokia pace · ×2",
-  tagBlazing: "Full chaos · ×3 points",
-  /* help page */
+  swipeHint: "SWIPE ON THE BOARD — OR USE THE PAD",
+  steer: "STEER",
+  pauseWord: "PAUSE",
+  restartWord: "RESTART",
+  muteWord: "MUTE",
+  mute: "Mute",
+  unmute: "Unmute",
+  footerLeft: "SERPENT v1.1 · 21×21 PIT",
+  footerRight: "EAT · GROW · SURVIVE",
+  footerAbout: "THE MAKER",
+  playPause: "Play / pause",
+  dirUp: "Up",
+  dirDown: "Down",
+  dirLeft: "Left",
+  dirRight: "Right",
+  st_menu: "READY",
+  st_playing: "LIVE",
+  st_paused: "HOLD",
+  st_over: "DOWN",
+  menuTitle: "READY, PLAYER?",
+  menuCopy:
+    "Eat apples. Grow long. The walls — and your own tail — are fatal. Speed climbs with every bite, and every fifth apple summons a golden star.",
+  menuBtn: "INSERT COIN",
+  menuHintKey: "SPACE · ENTER · ANY ARROW",
+  menuHintTouch: "TAP OR SWIPE TO LAUNCH",
+  pausedTitle: "PAUSED",
+  pausedCopy: "The serpent waits… score {score} · length {len}",
+  resumeBtn: "RESUME",
+  pauseHintKey: "SPACE TO RESUME",
+  pauseHintTouch: "TAP THE BOARD TO CONTINUE",
+  overWin: "BOARD CLEARED!",
+  overLose: "GAME OVER",
+  newRecord: "NEW RECORD",
+  finalScore: "FINAL SCORE",
+  playAgain: "PLAY AGAIN",
+  overHintKey: "PRESS ENTER",
+  overHintTouch: "TAP TO RUN IT BACK",
   helpBtn: "HELP",
+  aboutBtn: "THE MAKER",
   helpBack: "BACK TO THE GAME",
-  aboutBtn: "CREATOR",
   aboutBack: "BACK TO THE GAME",
   helpKicker: "THE FIELD MANUAL",
-  helpTitle: "HOW TO PLAY",
+  helpTitle: "How to Play SERPENT",
   helpIntro:
-    "Everything a player needs to know about SERPENT — what the game does, how it plays, what its goal is, what it outputs, where the settings live, and who built it.",
-  s1Title: "WHAT DOES THE GAME DO?",
+    "Everything you need: what the game does, how it plays, where the scores go, and where every setting lives.",
+  s1Title: "What does this game do?",
   s1Body:
-    "SERPENT is a modern arcade remake of the classic snake game. You steer a hungry serpent around a glowing 21×21 pit, eating apples to grow longer while the pace keeps climbing. It runs in any browser on desktop and mobile — with keyboard, swipe and on-screen pad controls, three speed tiers, chiptune sound and records that never leave your device.",
-  s2Title: "HOW IT PLAYS",
+    "SERPENT is a modern take on the classic snake game. You steer a hungry serpent around a 21×21 pit, eating apples to grow longer and score points. Every bite makes it faster. Hit a wall — or your own tail — and the run is over. It runs entirely in your browser, on desktop and mobile, with keyboard and touch controls.",
+  s2Title: "How it plays",
   s2Items: [
-    "Steer with the arrow keys or WASD — on mobile, swipe across the board.",
-    "Eat apples to grow longer and score points.",
-    "The walls are fatal — and so is your own tail. One touch and the run ends.",
-    "Every apple raises the tempo: the longer you live, the faster the pit gets.",
-    "Turns are queued, so you can chain rapid moves for tight maneuvers.",
+    "The serpent moves on its own — you only choose the direction.",
+    "Eat apples to grow. Longer means more points — and less room.",
+    "You cannot reverse straight into your own neck.",
+    "Turning twice quickly queues both turns, so corners feel crisp.",
+    "Speed rises with every apple; the tempo meter shows your level.",
   ],
   helpKeysTitle: "KEYBOARD",
-  helpTouchTitle: "TOUCH & MOBILE",
-  helpTouch1: "Swipe anywhere on the board to steer — chain swipes for rapid turns.",
-  helpTouch2: "Tap the board to start, and tap again to resume after a pause.",
-  helpTouch3: "The on-screen pad mirrors the arrow keys; its center button starts or pauses.",
-  s3Title: "THE GOAL",
+  helpTouchTitle: "TOUCH",
+  helpTouch1: "Swipe anywhere on the board to steer — chain swipes for corners.",
+  helpTouch2: "Tap the board to start, or to resume after a pause.",
+  helpTouch3: "Or use the on-screen pad; its center key pauses and plays.",
+  s3Title: "The goal",
   s3Body:
-    "Survive and grow. Every apple adds to your score and to your length — aim for the highest mark on your chosen tier, then defend it. Fill the whole 21×21 pit with your serpent and you trigger the legendary BOARD CLEARED ending.",
-  s4Title: "SCORES & OUTPUTS",
-  s4Body: "Each apple is worth 10 points, multiplied by the tier you play on.",
-  s4Formula: "EACH APPLE",
-  s4Times: "TIER MULTIPLIER",
-  s4Result: "PER APPLE",
-  outFinal: "FINAL SCORE",
-  outLen: "LENGTH",
-  outApples: "APPLES",
-  outTempo: "TEMPO",
+    "Survive as long as you can and push your score higher than your personal best on each speed tier. The legendary ending — filling the entire board — has never been witnessed. Will you be the first?",
+  s4Title: "Scores & outputs",
+  s4Body:
+    "Every apple pays 10 points, multiplied by the tier you chose — CHILL ×1, CLASSIC ×2, BLAZING ×3. The more you eat, the faster it gets. And every 5th apple summons a golden star — grab it before it fades for 50× the tier, pure bonus.",
+  s4Formula: "PER APPLE",
+  s4Times: "TIER",
+  s4Result: "POINTS",
   s4Save:
-    "When a run ends, the board reports your final score, length and apples eaten. Best records are saved automatically — per tier, in this browser — and listed in the Hall of Fame. No account needed.",
-  s5Title: "WHERE ARE THE SETTINGS?",
+    "At the end of every run you get four outputs: final score, serpent length, apples eaten, and top tempo level. Records are saved per tier, in this browser, and survive reloads.",
+  s5Title: "Where are the settings?",
   s5n1: "SPEED TIER",
-  s5w1: "Side panel on desktop · segmented strip under the board on mobile",
+  s5w1: "Left panel on desktop · strip under the board on mobile",
   s5n2: "LANGUAGE",
-  s5w2: "The EN | فا button in the header — switches everything, instantly",
+  s5w2: "The EN | فا switch at the top — everything re-renders instantly, right-to-left included",
   s5n3: "SOUND",
-  s5w3: "The speaker button in the header · or press M",
+  s5w3: "The speaker icon at the top — press M any time to mute",
   s5n4: "RECORDS",
-  s5w4: "Saved automatically in this browser, per tier — nothing leaves your device",
-  s6Title: "THE MAKER",
-  makerKicker: "BUILT BY A STUDENT",
-  makerLine1: "Built by Aref — a 12-year-old maker",
-  makerLine2: "Student of Dr. Mah Monir Aghaei",
-  makerContact: "CALL THE TEACHER",
-  makerPhone: "00971 55 154 4988",
+  s5w4: "Hall of Fame panel · saved automatically in your browser",
   helpEsc: "PRESS ESC TO RETURN TO THE PIT",
-  footerAbout: "THE MAKER",
+  makerKicker: "THE MAKER",
+  makerLine1: "Built by Aref — a 12-year-old creator.",
+  makerLine2:
+    "Aref is one of the students of Dr. Mahmonir Aghaei. This cabinet is his project: designed, tuned, and shipped by a young developer.",
+  makerContact: "CALL THE MENTOR",
+  makerPhone: "00971 55 154 4988",
+  historyTitle: "LAST RUNS",
+  medalsTitle: "MEDALS",
+  medalsNote: "Medals are earned across runs and kept in this browser.",
+  unlockToast: "NEW MEDAL: {name}",
+  m1n: "First Bite",
+  m1d: "Eat your first apple",
+  m2n: "Fruit Fan",
+  m2d: "Eat 25 apples in total",
+  m3n: "Apple Hoarder",
+  m3d: "Eat 100 apples in total",
+  m4n: "Century",
+  m4d: "Score 100+ in one run",
+  m5n: "Treasure Pit",
+  m5d: "Score 300+ in one run",
+  m6n: "Overdrive",
+  m6d: "Reach tempo level 5",
+  m7n: "Marathon",
+  m7d: "Stay alive 90 seconds in one run",
+  m8n: "Star Catcher",
+  m8d: "Catch a golden star",
+  m9n: "Legend",
+  m9d: "Clear the entire board",
+  m10n: "Explorer",
+  m10d: "Play all three speed tiers",
 };
 
-const fa: Dict = {
+const FA: Dict = {
   brand: "مار",
   tagline: "کابین آرکید مار",
   langLabel: "زبان",
@@ -284,197 +324,224 @@ const fa: Dict = {
     "سیب‌ها را بخور",
     "از دیوارها دوری کن",
     "دم خودت را گاز نگیر",
-    "SPACE بازی را متوقف می‌کند",
-    "در موبایل با کشیدن انگشت هدایت کن",
-    "سطح آتشین ×۳ امتیاز می‌دهد",
-    "با هر سیب سرعت بیشتر می‌شود",
-    "با R فوراً از نو شروع کن",
-    "با M صدا را قطع کن",
+    "Space بازی را نگه می‌دارد",
+    "در موبایل با سوایپ بران",
+    "توفانی ×۳ امتیاز می‌دهد",
+    "هر سیب سرعت را بیشتر می‌کند",
+    "ستاره‌ی طلایی = ۵۰× ضریب",
+    "کلید R شروع دوباره",
+    "کلید M بی‌صدا",
   ],
   best: "رکورد",
   score: "امتیاز",
   lenShort: "طول",
-  length: "طول مار",
+  length: "طول",
   lengthWord: "طول",
   applesLabel: "سیب‌ها",
   appleOne: "سیب",
   applesMany: "سیب",
   tempo: "سرعت",
   lv: "سطح",
-  controls: "کنترل‌ها",
+  selectSpeed: "انتخاب سرعت",
+  diffNote: "با تغییر سطح، زمین از نو می‌شود — رکوردهایت برای هر سطح جدا می‌ماند.",
+  diffChill: "آرام",
+  diffClassic: "کلاسیک",
+  diffBlazing: "توفانی",
+  diffChillTag: "قدم‌زدن آرام · امتیاز ×۱",
+  diffClassicTag: "همان سرعت نوکیای ۱۹۹۷ · ×۲",
+  diffBlazingTag: "آشوب تمام‌عیار · امتیاز ×۳",
   scoreboard: "جدول امتیاز",
   fame: "تالار افتخار",
-  selectSpeed: "انتخاب سرعت",
-  diffNote: "با تغییر سطح، زمین از نو شروع می‌شود — اما رکوردهایت برای هر سطح حفظ می‌شوند.",
-  fameNote: "رکوردها در همین مرورگر ذخیره می‌شوند. رکورد بزن، بعد ازش دفاع کن!",
-  unmute: "باصدا کردن",
-  mute: "بی‌صدا کردن",
+  fameNote: "رکوردها در همین مرورگر می‌مانند. رکورد بزن و بعد ازش دفاع کن.",
+  controls: "کنترل‌ها",
+  helpSteer: "هدایت مار",
+  helpWasd: "این هم هدایت می‌کند",
+  helpPause: "توقف / ادامه",
+  helpEnter: "شروع / شروع دوباره",
+  helpRestart: "شروع دوباره فوری",
+  helpMute: "بی‌صدا کردن",
+  swipeHint: "روی صفحه سوایپ کن — یا از پد استفاده کن",
   steer: "هدایت",
   pauseWord: "توقف",
-  restartWord: "شروع دوباره",
-  muteWord: "بی‌صدا",
-  footerLeft: "مار · زمین ۲۱×۲۱",
+  restartWord: "دوباره",
+  muteWord: "صدا",
+  mute: "بی‌صدا",
+  unmute: "باصدا",
+  footerLeft: "مار ن.۱٫۱ · زمین ۲۱×۲۱",
   footerRight: "بخور · بزرگ شو · زنده بمان",
-  swipeHint: "روی زمین بکش — یا از پد استفاده کن",
+  footerAbout: "سازنده",
+  playPause: "پخش / توقف",
+  dirUp: "بالا",
+  dirDown: "پایین",
+  dirLeft: "چپ",
+  dirRight: "راست",
   st_menu: "آماده",
-  st_playing: "در حال بازی",
-  st_paused: "توقف",
+  st_playing: "زنده",
+  st_paused: "نگهداشت",
   st_over: "باخت",
   menuTitle: "آماده‌ای، قهرمان؟",
   menuCopy:
-    "سیب بخور، بزرگ شو؛ اما مواظب باش! دیوارها و دمِ خودت کشنده‌اند و با هر لقمه، سرعت بیشتر می‌شود.",
-  menuBtn: "شروع بازی",
-  menuHintTouch: "ضربه بزن یا بکش تا شروع شود",
-  menuHintKey: "SPACE · ENTER · جهت‌نماها",
+    "سیب بخور و بزرگ شو. دیوارها و دم خودت کشنده‌اند. با هر گاز سرعت بیشتر می‌شود و هر پنجمین سیب یک ستاره‌ی طلایی احضار می‌کند.",
+  menuBtn: "سکه بینداز",
+  menuHintKey: "Space · Enter · هر جهت‌نما",
+  menuHintTouch: "ضربه بزن یا سوایپ کن",
   pausedTitle: "توقف",
   pausedCopy: "مار منتظر است… امتیاز {score} · طول {len}",
   resumeBtn: "ادامه",
-  pauseHintTouch: "برای ادامه، روی زمین ضربه بزن",
-  pauseHintKey: "برای ادامه، SPACE را بزن",
+  pauseHintKey: "Space برای ادامه",
+  pauseHintTouch: "برای ادامه ضربه بزن",
   overWin: "زمین پاک شد!",
   overLose: "باختی!",
   newRecord: "رکورد جدید",
   finalScore: "امتیاز نهایی",
   playAgain: "دوباره بازی کن",
-  overHintTouch: "برای شروع دوباره ضربه بزن",
-  overHintKey: "ENTER را بزن",
-  dirUp: "بالا",
-  dirDown: "پایین",
-  dirLeft: "چپ",
-  dirRight: "راست",
-  playPause: "شروع / توقف",
-  helpSteer: "هدایت مار",
-  helpWasd: "این‌ها هم هدایت می‌کنند",
-  helpPause: "توقف / ادامه",
-  helpEnter: "شروع / شروع دوباره",
-  helpRestart: "شروع فوری دوباره",
-  helpMute: "بی‌صدا کردن",
-  diffChill: "آرام",
-  diffClassic: "کلاسیک",
-  diffBlazing: "آتشین",
-  tagChill: "سرعت ملایم · امتیاز ×۱",
-  tagClassic: "سرعت نوکیای ۱۹۹۷ · ×۲",
-  tagBlazing: "هیجان کامل · امتیاز ×۳",
-  /* help page */
+  overHintKey: "Enter را بزن",
+  overHintTouch: "ضربه بزن تا دوباره بدوی",
   helpBtn: "راهنما",
+  aboutBtn: "سازنده",
   helpBack: "بازگشت به بازی",
-  aboutBtn: "درباره سازنده",
   aboutBack: "بازگشت به بازی",
   helpKicker: "دفترچه‌ی راهنما",
-  helpTitle: "چطور بازی کنیم؟",
+  helpTitle: "چطور مار بازی کنیم؟",
   helpIntro:
-    "هر چیزی که یک بازیکن درباره‌ی «مار» باید بداند — این بازی چه کار می‌کند، چطور بازی می‌شود، هدفش چیست، خروجی‌هایش کدام‌اند، تنظیماتش کجاست و سازنده‌اش کیست.",
-  s1Title: "این بازی چه کار می‌کند؟",
+    "هر آنچه لازم داری: بازی چه می‌کند، چطور بازی می‌شود، امتیازها کجا می‌روند و هر تنظیم کجاست.",
+  s1Title: "این بازی چه می‌کند؟",
   s1Body:
-    "«مار» یک بازسازی مدرن و آرکید از بازی نوستالژیک مار است. تو یک مار گرسنه را در زمین درخشان ۲۱×۲۱ هدایت می‌کنی؛ سیب می‌خوری تا بلندتر شوی، درحالی‌که سرعت بازی مدام بیشتر می‌شود. بازی در هر مرورگری اجرا می‌شود — هم روی کامپیوتر و هم موبایل؛ با صفحه‌کلید، کشیدن انگشت و پد لمسی، سه سطح سختی، صدای چیپ‌تیون و رکوردهایی که هرگز از دستگاه تو بیرون نمی‌روند.",
-  s2Title: "روش بازی",
+    "«مار» نسخه‌ی امروزی همان بازی نوستالژیک مار است. یک مار گرسنه را در زمینی ۲۱×۲۱ می‌رانی، سیب می‌خوری تا بزرگ‌تر شوی و امتیاز بگیری؛ با هر گاز سرعت بیشتر می‌شود. به دیوار یا دم خودت بخوری، بازی تمام است. همه‌چیز داخل مرورگر اجرا می‌شود — روی کامپیوتر و موبایل، با کیبورد و لمس.",
+  s2Title: "چطور بازی می‌شود؟",
   s2Items: [
-    "مار را با جهت‌نماها یا WASD هدایت کن — در موبایل، انگشتت را روی زمین بکش.",
-    "سیب بخور تا مارت بلندتر شود و امتیاز بگیری.",
-    "دیوارها کشنده‌اند — دمِ خودت هم همین‌طور؛ با یک برخورد، بازی تمام می‌شود.",
-    "با هر سیب، سرعت بیشتر می‌شود: هرچه بیشتر زنده بمانی، زمین تندتر می‌شود.",
-    "چرخش‌ها در صف ذخیره می‌شوند؛ پس می‌توانی چند حرکت را پشت‌سرهم و سریع وارد کنی.",
+    "مار خودش حرکت می‌کند — تو فقط جهت را انتخاب می‌کنی.",
+    "سیب بخور تا بزرگ شوی؛ بلندتر یعنی امتیاز بیشتر و جای کمتر.",
+    "نمی‌توانی مستقیم به گردن خودت برگردی.",
+    "دو فرمان پیاپی در صف می‌مانند تا گوشه‌ها نرم گرفته شوند.",
+    "با هر سیب سرعت بالا می‌رود؛ نوار «سرعت» سطح را نشان می‌دهد.",
   ],
-  helpKeysTitle: "صفحه‌کلید",
-  helpTouchTitle: "لمسی و موبایل",
-  helpTouch1: "هر جای زمین که انگشت بکشی، مار می‌پیچد — برای پیچ‌های تند، چند بار پشت‌هم بکش.",
-  helpTouch2: "با یک ضربه روی زمین، بازی شروع می‌شود و بعد از توقف هم با ضربه ادامه می‌یابد.",
-  helpTouch3: "پد روی صفحه نقش جهت‌نماها را دارد؛ دکمه‌ی وسطش بازی را شروع یا متوقف می‌کند.",
+  helpKeysTitle: "کیبورد",
+  helpTouchTitle: "لمسی",
+  helpTouch1: "هر جای زمین سوایپ کن تا مار بپیچد — سوایپ‌های پیاپی برای گوشه‌ها.",
+  helpTouch2: "برای شروع ضربه بزن؛ بعد از توقف هم با ضربه ادامه بده.",
+  helpTouch3: "یا از پد روی صفحه استفاده کن؛ کلید وسطش توقف/پخش است.",
   s3Title: "هدف بازی",
   s3Body:
-    "زنده بمان و رشد کن! هر سیب هم امتیاز می‌دهد و هم مارت را بلندتر می‌کند — روی سطح سختی دلخواهت بهترین رکورد را بزن و بعد از آن دفاع کن. اگر بتوانی کل زمین ۲۱×۲۱ را با مارت پر کنی، پایان افسانه‌ای «زمین پاک شد!» را می‌بینی.",
+    "تا می‌توانی زنده بمان و امتیازت را در هر سطح سرعت از رکورد خودت بالاتر ببر. پایان افسانه‌ای — پر کردن کل زمین — هنوز هیچ‌کس ندیده؛ شاید تو اولین باشی.",
   s4Title: "امتیازها و خروجی‌ها",
-  s4Body: "هر سیب ۱۰ امتیاز دارد که در ضریب سطح سختیِ انتخابی ضرب می‌شود.",
+  s4Body:
+    "هر سیب ۱۰ امتیاز دارد، ضرب‌در ضریب سطحی که انتخاب کرده‌ای — آرام ×۱، کلاسیک ×۲، توفانی ×۳. هر چه بیشتر بخوری، سرعت بیشتر می‌شود. و هر پنجمین سیب یک ستاره‌ی طلایی احضار می‌کند — قبل از محو شدن بگیرش: ۵۰× ضریب، امتیاز خالص!",
   s4Formula: "هر سیب",
   s4Times: "ضریب سطح",
-  s4Result: "برای هر سیب",
-  outFinal: "امتیاز نهایی",
-  outLen: "طول مار",
-  outApples: "سیب‌ها",
-  outTempo: "سطح سرعت",
+  s4Result: "امتیاز",
   s4Save:
-    "در پایان هر بازی، زمین نتیجه را گزارش می‌دهد: امتیاز نهایی، طول مار و تعداد سیب‌های خورده‌شده. بهترین رکورد هر سطح به‌طور خودکار در همین مرورگر ذخیره می‌شود و در تالار افتخار قرار می‌گیرد — بدون نیاز به ثبت‌نام.",
+    "پایان هر بازی چهار خروجی داری: امتیاز نهایی، طول مار، سیب‌های خورده‌شده و بالاترین سطح سرعت. رکوردها برای هر سطح جدا، در همین مرورگر، ذخیره می‌شوند و با رفرش پاک نمی‌شوند.",
   s5Title: "تنظیمات کجاست؟",
-  s5n1: "سطح سختی",
-  s5w1: "پنل کنار زمین در دسکتاپ · نوار سه‌گزینه‌ای زیر زمین در موبایل",
+  s5n1: "سطح سرعت",
+  s5w1: "پنل سمت راست دسکتاپ · نوار زیر زمین در موبایل",
   s5n2: "زبان",
-  s5w2: "دکمه‌ی EN | فا در بالای صفحه — همه‌چیز را فوراً عوض می‌کند",
+  s5w2: "کلید EN | فا بالای صفحه — همه‌چیز همان لحظه عوض می‌شود، راست‌چین هم هست",
   s5n3: "صدا",
-  s5w3: "دکمه‌ی بلندگو در بالای صفحه · یا کلید M",
+  s5w3: "آیکون بلندگوی بالای صفحه — هر وقت خواستی M را بزن",
   s5n4: "رکوردها",
-  s5w4: "به‌طور خودکار برای هر سطح در همین مرورگر ذخیره می‌شود — هیچ‌چیز از دستگاهت بیرون نمی‌رود",
-  s6Title: "درباره‌ی سازنده",
-  makerKicker: "ساخته‌ی یک دانش‌آموز",
-  makerLine1: "ساخته‌ی عارف — سازنده‌ی ۱۲ ساله",
-  makerLine2: "از شاگردان دکتر ماه‌منیر آقایی",
+  s5w4: "پنل تالار افتخار · خودکار در مرورگرت ذخیره می‌شود",
+  helpEsc: "برای بازگشت به زمین بازی، ESC را بزن",
+  makerKicker: "سازنده",
+  makerLine1: "ساخته‌ی عارف — سازنده‌ی ۱۲ ساله.",
+  makerLine2:
+    "عارف از شاگردان خانم دکتر ماه منیر آقایی است. این کابین پروژه‌ی اوست: طراحی، تنظیم و ساخت، همه زیر دست یک توسعه‌دهنده‌ی نوجوان.",
   makerContact: "تماس با استاد",
   makerPhone: "۰۰۹۷۱۵۵۱۵۴۴۹۸۸",
-  helpEsc: "برای بازگشت به زمین بازی، ESC را بزن",
-  footerAbout: "سازنده",
+  historyTitle: "بازی‌های اخیر",
+  medalsTitle: "مدال‌ها",
+  medalsNote: "مدال‌ها در طول بازی‌ها کسب می‌شوند و در همین مرورگر می‌مانند.",
+  unlockToast: "مدال جدید: {name}",
+  m1n: "اولین گاز",
+  m1d: "اولین سیب را بخور",
+  m2n: "میوه‌خور",
+  m2d: "در مجموع ۲۵ سیب بخور",
+  m3n: "انباردار سیب",
+  m3d: "در مجموع ۱۰۰ سیب بخور",
+  m4n: "صدتایی",
+  m4d: "در یک بازی ۱۰۰ امتیاز یا بیشتر بگیر",
+  m5n: "گنجِ زمین",
+  m5d: "در یک بازی ۳۰۰ امتیاز یا بیشتر بگیر",
+  m6n: "دور تند",
+  m6d: "به سطح سرعت ۵ برس",
+  m7n: "ماراتن",
+  m7d: "در یک بازی ۹۰ ثانیه زنده بمان",
+  m8n: "شکارچی ستاره",
+  m8d: "یک ستاره‌ی طلایی بگیر",
+  m9n: "افسانه",
+  m9d: "کل زمین را پاک کن",
+  m10n: "جهانگرد",
+  m10d: "هر سه سطح سرعت را بازی کن",
 };
 
-const DICTS: Record<Lang, Dict> = { en, fa };
-const LANG_KEY = "serpent.lang";
-
-function detectLang(): Lang {
-  try {
-    const stored = localStorage.getItem(LANG_KEY);
-    if (stored === "fa" || stored === "en") return stored;
-  } catch {
-    /* ignore */
-  }
-  try {
-    return navigator.language?.toLowerCase().startsWith("fa") ? "fa" : "en";
-  } catch {
-    return "en";
-  }
-}
+const DICTS: Record<Lang, Dict> = { en: EN, fa: FA };
 
 interface LangCtx {
   lang: Lang;
   setLang: (l: Lang) => void;
   t: Dict;
   fa: boolean;
-  /** Format a number with the active locale's digits */
   fmt: (n: number | string) => string;
 }
 
 const Ctx = createContext<LangCtx | null>(null);
 
+const LANG_KEY = "serpent.lang";
+
+function detectLang(): Lang {
+  try {
+    const saved = localStorage.getItem(LANG_KEY);
+    if (saved === "fa" || saved === "en") return saved;
+  } catch {
+    /* ignore */
+  }
+  try {
+    if (navigator.language && navigator.language.toLowerCase().startsWith("fa")) return "fa";
+  } catch {
+    /* ignore */
+  }
+  return "en";
+}
+
 export function LangProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Lang>(detectLang);
+
+  const setLang = useCallback((l: Lang) => {
+    setLangState(l);
+    try {
+      localStorage.setItem(LANG_KEY, l);
+    } catch {
+      /* ignore */
+    }
+  }, []);
 
   useEffect(() => {
     const root = document.documentElement;
     root.lang = lang;
     root.dir = lang === "fa" ? "rtl" : "ltr";
-    document.title = lang === "fa" ? "مار · بازی آرکید" : "SERPENT · Arcade Snake";
-    try {
-      localStorage.setItem(LANG_KEY, lang);
-    } catch {
-      /* ignore */
-    }
+    document.title = lang === "fa" ? "مار · بازی آرکید مار" : "SERPENT · Arcade Snake";
   }, [lang]);
 
-  const setLang = useCallback((l: Lang) => setLangState(l), []);
+  const t = DICTS[lang];
 
   const fmt = useCallback(
-    (n: number | string) =>
-      new Intl.NumberFormat(lang === "fa" ? "fa-IR" : "en-US").format(
-        typeof n === "string" ? Number(n) || 0 : n
-      ),
+    (n: number | string) => {
+      if (lang === "en") return String(n);
+      return String(n).replace(/\d/g, (d) => FA_DIGITS[Number(d)]);
+    },
     [lang]
   );
 
-  return (
-    <Ctx.Provider value={{ lang, setLang, t: DICTS[lang], fa: lang === "fa", fmt }}>
-      {children}
-    </Ctx.Provider>
+  const value = useMemo(
+    () => ({ lang, setLang, t, fa: lang === "fa", fmt }),
+    [lang, setLang, t, fmt]
   );
+
+  return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 
 export function useLang(): LangCtx {
   const v = useContext(Ctx);
-  if (!v) throw new Error("useLang must be used inside <LangProvider>");
+  if (!v) throw new Error("useLang must be used inside LangProvider");
   return v;
 }
