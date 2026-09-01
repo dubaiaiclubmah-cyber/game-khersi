@@ -2,14 +2,23 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
     <meta name="theme-color" content="#06110c" />
-    <meta name="description" content="SERPENT — a modern arcade snake game. Eat, grow, survive. Keyboard + touch controls, three speed tiers, persistent high scores." />
+    <meta
+      name="description"
+      content="SERPENT · مار — a bilingual arcade snake game. Eat, grow, survive. Keyboard + touch controls, three speed tiers, persistent high scores."
+    />
     <title>SERPENT · Arcade Snake</title>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%2306110c'/%3E%3Crect x='2' y='10' width='4' height='4' fill='%2327a678'/%3E%3Crect x='6' y='10' width='4' height='4' fill='%234de38a'/%3E%3Crect x='6' y='6' width='4' height='4' fill='%234de38a'/%3E%3Crect x='10' y='6' width='4' height='4' fill='%23b8f04d'/%3E%3Crect x='12' y='7' width='1.4' height='1.4' fill='%2306110c'/%3E%3Crect x='10' y='2' width='4' height='4' fill='%23ff6b5e'/%3E%3C/svg%3E" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Space+Grotesk:wght@400;500;600;700&family=Lalezar&family=Vazirmatn:wght@400;500;700;800&display=swap"
+      rel="stylesheet"
+    />
     <script>
       (function () {
         var isInIframe = window.self !== window.top;
@@ -22,12 +31,23 @@
           window.addEventListener("message", function (event) {
             if (event.data && typeof event.data.theme === "string") {
               var theme = event.data.theme;
-              if (theme === "light" || theme === "dark") applyThemeToDOM(theme);
+              if (theme === "dark" || theme === "light") applyThemeToDOM(theme);
             }
           });
         } else {
           applyThemeToDOM("dark");
         }
+        /* restore language direction before first paint */
+        try {
+          var lang = localStorage.getItem("serpent.lang");
+          if (lang !== "fa" && lang !== "en" && navigator.language) {
+            lang = navigator.language.toLowerCase().indexOf("fa") === 0 ? "fa" : "en";
+          }
+          if (lang === "fa") {
+            document.documentElement.lang = "fa";
+            document.documentElement.dir = "rtl";
+          }
+        } catch (e) {}
       })();
     </script>
     <script>

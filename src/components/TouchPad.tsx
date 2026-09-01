@@ -1,6 +1,7 @@
 import type { PointerEvent } from "react";
 import type { GameAPI } from "../game/useSnakeGame";
 import type { Dir } from "../game/engine";
+import { useLang } from "../game/i18n";
 
 const BTN =
   "clip-pixel-sm flex h-14 w-full items-center justify-center border border-[#2c523d] bg-[#0e2118] " +
@@ -28,6 +29,8 @@ function Chevron({ rotate }: { rotate: number }) {
 }
 
 export function TouchPad({ game }: { game: GameAPI }) {
+  const { t } = useLang();
+
   const press = (dir: Dir) => (e: PointerEvent<HTMLButtonElement>) => {
     e.preventDefault();
     game.setDirection(dir);
@@ -51,28 +54,28 @@ export function TouchPad({ game }: { game: GameAPI }) {
     );
 
   return (
-    <div className="grid w-56 grid-cols-3 gap-2" aria-label="Touch controls">
+    <div className="grid w-56 grid-cols-3 gap-2" aria-label={t.controls}>
       <span />
-      <button type="button" className={BTN} onPointerDown={press("up")} aria-label="Up">
+      <button type="button" className={BTN} onPointerDown={press("up")} aria-label={t.dirUp}>
         <Chevron rotate={0} />
       </button>
       <span />
-      <button type="button" className={BTN} onPointerDown={press("left")} aria-label="Left">
+      <button type="button" className={BTN} onPointerDown={press("left")} aria-label={t.dirLeft}>
         <Chevron rotate={-90} />
       </button>
       <button
         type="button"
         className={BTN + " text-amber"}
         onPointerDown={center}
-        aria-label="Pause or play"
+        aria-label={t.playPause}
       >
         {centerLabel}
       </button>
-      <button type="button" className={BTN} onPointerDown={press("right")} aria-label="Right">
+      <button type="button" className={BTN} onPointerDown={press("right")} aria-label={t.dirRight}>
         <Chevron rotate={90} />
       </button>
       <span />
-      <button type="button" className={BTN} onPointerDown={press("down")} aria-label="Down">
+      <button type="button" className={BTN} onPointerDown={press("down")} aria-label={t.dirDown}>
         <Chevron rotate={180} />
       </button>
       <span />
