@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-mode="dark" data-palette="forest">
+<html lang="en" data-palette="forest" data-mode="dark">
   <head>
     <meta charset="UTF-8" />
     <meta
@@ -9,19 +9,35 @@
     <meta name="theme-color" content="#06110c" />
     <meta
       name="description"
-      content="SERPENT · مار — a bilingual arcade snake game. Eat, grow, survive. Keyboard + touch controls, three speed tiers, stars, medals, themes and persistent high scores."
+      content="SERPENT · مار — a bilingual arcade snake game. Eat, grow, survive. Keyboard + touch controls, three speed tiers, medals, bonus stars, persistent high scores."
     />
     <title>SERPENT · Arcade Snake</title>
     <link rel="icon" href="image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%2306110c'/%3E%3Crect x='2' y='10' width='4' height='4' fill='%2327a678'/%3E%3Crect x='6' y='10' width='4' height='4' fill='%234de38a'/%3E%3Crect x='6' y='6' width='4' height='4' fill='%234de38a'/%3E%3Crect x='10' y='6' width='4' height='4' fill='%23b8f04d'/%3E%3Crect x='12' y='7' width='1.4' height='1.4' fill='%2306110c'/%3E%3Crect x='10' y='2' width='4' height='4' fill='%23ff6b5e'/%3E%3C/svg%3E" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Space+Grotesk:wght@500;600;700&family=Lalezar&family=Vazirmatn:wght@500;700;800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Space+Grotesk:wght@400;500;600;700&family=Lalezar&family=Vazirmatn:wght@400;500;700;800;900&display=swap"
       rel="stylesheet"
     />
     <script>
       (function () {
-        /* language + direction before first paint */
+        var isInIframe = window.self !== window.top;
+        function applyThemeToDOM(theme) {
+          document.documentElement.classList.remove("light", "dark");
+          document.documentElement.classList.add(theme);
+          document.documentElement.setAttribute("data-theme", theme);
+        }
+        if (isInIframe) {
+          window.addEventListener("message", function (event) {
+            if (event.data && typeof event.data.theme === "string") {
+              var theme = event.data.theme;
+              if (theme === "dark" || theme === "light") applyThemeToDOM(theme);
+            }
+          });
+        } else {
+          applyThemeToDOM("dark");
+        }
+        /* restore language + appearance before first paint */
         try {
           var lang = localStorage.getItem("serpent.lang");
           if (lang !== "fa" && lang !== "en" && navigator.language) {
@@ -30,17 +46,51 @@
           if (lang === "fa") {
             document.documentElement.lang = "fa";
             document.documentElement.dir = "rtl";
+            document.title = "مار · بازی آرکید مار";
+          }
+          var raw = localStorage.getItem("serpent.theme");
+          if (raw) {
+            var tv = JSON.parse(raw);
+            if (tv && typeof tv.palette === "string" &&
+                ["forest", "ocean", "ember", "night"].indexOf(tv.palette) !== -1) {
+              document.documentElement.setAttribute("data-palette", tv.palette);
+            }
+            if (tv && (tv.mode === "light" || tv.mode === "dark")) {
+              document.documentElement.setAttribute("data-mode", tv.mode);
+            }
           }
         } catch (e) {}
-        /* theme (mode × palette) before first paint */
-        try {
-          var th = JSON.parse(localStorage.getItem("serpent.theme") || "null");
-          var mode = th && th.mode === "light" ? "light" : "dark";
-          var pals = ["forest", "ocean", "ember", "night"];
-          var pal = th && pals.indexOf(th.palette) >= 0 ? th.palette : "forest";
-          document.documentElement.setAttribute("data-mode", mode);
-          document.documentElement.setAttribute("data-palette", pal);
-        } catch (e) {}
+      })();
+    </script>
+    <script>
+      (function () {
+        if (window.self === window.top) return;
+        var reported = {};
+        window.addEventListener("error", function (event) {
+          if (!event || !event.message) return;
+          var key =
+            event.message + "|" + (event.filename || "") + "|" + (event.lineno || 0);
+          if (reported[key]) return;
+          reported[key] = true;
+          try {
+            window.parent.postMessage(
+              {
+                type: "sandbox-runtime-error",
+                payload: {
+                  message: String(event.message).slice(0, 500),
+                  filename: String(event.filename || ""),
+                  lineno: Number(event.lineno || 0),
+                  colno: Number(event.colno || 0),
+                  stack:
+                    event.error && event.error.stack
+                      ? String(event.error.stack).slice(0, 2000)
+                      : ""
+                }
+              },
+              "*"
+            );
+          } catch (e) {}
+        });
       })();
     </script>
   </head>

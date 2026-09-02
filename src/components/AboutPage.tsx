@@ -25,10 +25,10 @@ function MakerAvatar() {
   return (
     <svg
       viewBox="0 0 12 12"
-      width="112"
-      height="112"
+      width="124"
+      height="124"
       shapeRendering="crispEdges"
-      className="drop-shadow-[0_0_18px_rgba(184,240,77,0.25)]"
+      className="drop-shadow-[0_0_18px_var(--glow1)]"
       aria-hidden
     >
       {rects.map(([x, y, w, h, c], i) => (
@@ -40,7 +40,7 @@ function MakerAvatar() {
 
 function PhoneIcon() {
   return (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
       <path d="M6.6 3h3l1.5 4.5-2 1.5a12 12 0 0 0 5.9 5.9l1.5-2L21 14.4v3A3.6 3.6 0 0 1 17.4 21 14.4 14.4 0 0 1 3 6.6 3.6 3.6 0 0 1 6.6 3z" />
     </svg>
   );
@@ -97,47 +97,47 @@ export function AboutPage({ onClose }: { onClose: () => void }) {
             ref={backRef}
             type="button"
             onClick={onClose}
-            className="clip-pixel-sm flex items-center gap-2 border border-hedge bg-shell px-3 py-2.5 font-display text-[8px] text-amber transition-all duration-150 hover:-translate-y-0.5 hover:text-fog active:translate-y-0 cursor-pointer"
+            className="clip-pixel-sm flex items-center gap-2 border border-hedge bg-shell px-3.5 py-3 font-display text-[11px] text-amber transition-all duration-150 hover:-translate-y-0.5 hover:text-fog active:translate-y-0 cursor-pointer"
           >
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden className="rtl:-scale-x-100">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden className="rtl:-scale-x-100">
               <path d="M15 5 L8 12 L15 19" stroke="currentColor" strokeWidth="3" strokeLinecap="square" />
             </svg>
             {t.aboutBack}
           </button>
-          <span className="font-display text-[8px] tracking-[0.24em] text-fern">{t.aboutKicker}</span>
+          <span className="hidden font-display text-[10px] text-fern sm:inline">{t.aboutKicker}</span>
         </div>
       </div>
 
       <div className="relative z-10 mx-auto w-full max-w-2xl px-4 pb-16 pt-12 md:px-8">
-        <p className="text-center font-display text-[8px] tracking-[0.3em] text-amber">{t.aboutKicker}</p>
-        <h1 className="mt-3 text-center font-title text-4xl leading-tight text-lime [text-shadow:0_0_26px_rgba(184,240,77,0.35)] md:text-5xl">
+        <p className="text-center font-display text-[10px] text-amber md:text-[11px]">{t.aboutKicker}</p>
+        <h1 className="mt-3 text-center font-title text-5xl leading-tight text-lime title-glow md:text-6xl">
           {t.aboutTitle}
         </h1>
 
-        <div className="panel clip-pixel mt-10 border-[#6b5320] p-6 md:p-8" style={{ borderColor: "#6b5320" }}>
+        <div className="panel clip-pixel mt-10 p-6 md:p-8" style={{ borderColor: "#6b5320" }}>
           <div className="flex flex-col items-center gap-6 md:flex-row md:items-start">
             <div className="flex shrink-0 flex-col items-center gap-3">
               <div className="clip-pixel-sm border-2 border-[#6b5320] bg-shell2 p-3">
                 <MakerAvatar />
               </div>
-              <span className="clip-pixel-sm bg-amber px-2.5 py-1 font-display text-[7px] tracking-[0.14em] text-inkdeep">
+              <span className="clip-pixel-sm bg-amber px-3 py-1.5 font-display text-[11px] text-inkdeep">
                 {lang === "fa" ? "۱۲ ساله" : "AGE 12"}
               </span>
             </div>
 
             <div className="flex w-full flex-col items-center gap-4 text-center md:items-start md:text-start">
-              <span className="clip-pixel-sm border border-teal/50 px-2.5 py-1 font-display text-[7px] tracking-[0.2em] text-teal">
+              <span className="clip-pixel-sm border border-teal/50 px-3 py-1.5 font-display text-[10px] text-teal">
                 {t.makerKicker}
               </span>
               <div>
-                <p className="font-title text-2xl leading-snug text-fog md:text-3xl">{t.makerLine1}</p>
-                <p className="mt-3 text-sm leading-7 text-mint md:text-[15px]">{t.makerLine2}</p>
+                <p className="font-title text-3xl leading-snug text-fog md:text-4xl">{t.makerLine1}</p>
+                <p className="mt-3 text-[15px] leading-7 text-mint md:text-base">{t.makerLine2}</p>
               </div>
 
-              <div className="mt-2 flex flex-col items-center gap-3 md:items-start">
+              <div className="mt-2 flex flex-col items-center gap-3.5 md:items-start">
                 <a
                   href="tel:00971551544988"
-                  className="clip-pixel-sm flex items-center gap-2.5 bg-amber px-6 py-3.5 font-display text-[10px] text-inkdeep shadow-[0_0_28px_rgba(255,201,77,0.3)] transition-all duration-150 hover:-translate-y-0.5 hover:brightness-110 active:translate-y-0.5 active:brightness-95 cursor-pointer"
+                  className="clip-pixel-sm flex items-center gap-2.5 bg-amber px-6 py-4 font-display text-[13px] text-inkdeep glow-amber transition-all duration-150 hover:-translate-y-0.5 hover:brightness-110 active:translate-y-0.5 active:brightness-95 cursor-pointer"
                 >
                   <PhoneIcon />
                   {t.makerContact}
@@ -145,7 +145,7 @@ export function AboutPage({ onClose }: { onClose: () => void }) {
                 <a
                   href="tel:00971551544988"
                   dir="ltr"
-                  className="font-display text-sm tracking-[0.12em] text-amber transition-colors hover:text-lime md:text-base"
+                  className="font-display text-base text-amber transition-colors hover:text-lime md:text-lg"
                 >
                   {t.makerPhone}
                 </a>
@@ -155,14 +155,14 @@ export function AboutPage({ onClose }: { onClose: () => void }) {
         </div>
 
         <div className="mt-10 flex flex-col items-center gap-4">
-          <p className="font-display text-[7px] tracking-[0.26em] text-fern">
+          <p className="font-display text-[10px] text-fern">
             {t.helpEsc}
-            <span className="blink-cursor ms-1.5 inline-block h-2.5 w-1.5 translate-y-px bg-amber" />
+            <span className="blink-cursor ms-1.5 inline-block h-3 w-2 translate-y-px bg-amber" />
           </p>
           <button
             type="button"
             onClick={onClose}
-            className="clip-pixel-sm flex items-center gap-2.5 bg-btn px-7 py-3.5 font-display text-[10px] text-inkdeep shadow-[0_0_28px_rgba(184,240,77,0.35)] transition-all duration-150 hover:-translate-y-0.5 hover:brightness-110 active:translate-y-0.5 cursor-pointer"
+            className="clip-pixel-sm flex items-center gap-2.5 bg-btn px-7 py-4 font-display text-[13px] text-inkdeep glow-lime transition-all duration-150 hover:-translate-y-0.5 hover:brightness-110 active:translate-y-0.5 cursor-pointer"
           >
             {t.aboutBack}
           </button>

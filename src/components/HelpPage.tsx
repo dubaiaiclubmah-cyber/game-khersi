@@ -44,7 +44,7 @@ function Reveal({ children, className = "" }: { children: ReactNode; className?:
 
 function BookIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden>
       <path d="M4 4h9a3 3 0 0 1 3 3v13H7a3 3 0 0 1-3-3V4z" stroke="currentColor" strokeWidth="2" />
       <path d="M16 8h4v12h-9" stroke="currentColor" strokeWidth="2" />
       <path d="M8 9h5M8 12h5" stroke="currentColor" strokeWidth="2" strokeLinecap="square" />
@@ -54,7 +54,7 @@ function BookIcon() {
 
 function SwipeIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" aria-hidden>
       <path d="M3 12h13M12 7l5 5-5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="square" />
       <circle cx="19" cy="5" r="1.6" fill="currentColor" />
     </svg>
@@ -63,7 +63,7 @@ function SwipeIcon() {
 
 function TapIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" aria-hidden>
       <circle cx="12" cy="12" r="3.2" fill="currentColor" />
       <circle cx="12" cy="12" r="7.5" stroke="currentColor" strokeWidth="2" strokeDasharray="4 4" />
     </svg>
@@ -72,7 +72,7 @@ function TapIcon() {
 
 function PadIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" aria-hidden>
       <rect x="9" y="3" width="6" height="6" stroke="currentColor" strokeWidth="2" />
       <rect x="3" y="9" width="6" height="6" stroke="currentColor" strokeWidth="2" />
       <rect x="9" y="9" width="6" height="6" fill="currentColor" />
@@ -141,7 +141,7 @@ function Section({ num, title, children, accent }: {
         <span aria-hidden className="absolute end-4 top-1 font-display text-5xl text-hedge/50 select-none md:text-6xl">
           {num}
         </span>
-        <h2 className="relative font-title text-2xl text-fog md:text-3xl">{title}</h2>
+        <h2 className="relative font-title text-3xl text-fog md:text-4xl">{title}</h2>
         <div className="mt-4">{children}</div>
       </section>
     </Reveal>
@@ -232,37 +232,37 @@ export function HelpPage({ game, onClose }: { game: GameAPI; onClose: () => void
             ref={backRef}
             type="button"
             onClick={onClose}
-            className="clip-pixel-sm flex items-center gap-2 border border-hedge bg-shell px-3 py-2.5 font-display text-[8px] text-teal transition-all duration-150 hover:-translate-y-0.5 hover:text-fog active:translate-y-0 cursor-pointer"
+            className="clip-pixel-sm flex items-center gap-2 border border-hedge bg-shell px-3.5 py-3 font-display text-[11px] text-teal transition-all duration-150 hover:-translate-y-0.5 hover:text-fog active:translate-y-0 cursor-pointer"
           >
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden className="rtl:-scale-x-100">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden className="rtl:-scale-x-100">
               <path d="M15 5 L8 12 L15 19" stroke="currentColor" strokeWidth="3" strokeLinecap="square" />
             </svg>
             {t.helpBack}
           </button>
-          <span className="font-display text-[8px] tracking-[0.24em] text-fern">{t.helpKicker}</span>
+          <span className="hidden font-display text-[10px] text-fern sm:inline">{t.helpKicker}</span>
         </div>
       </div>
 
       <div className="relative z-10 mx-auto w-full max-w-3xl px-4 pb-16 pt-10 md:px-8">
         <Reveal>
-          <p className="font-display text-[8px] tracking-[0.3em] text-teal md:text-[9px]">{t.helpKicker}</p>
-          <h1 className="mt-3 font-title text-4xl leading-tight text-lime [text-shadow:0_0_26px_rgba(184,240,77,0.35)] md:text-6xl">
+          <p className="font-display text-[10px] text-teal md:text-[11px]">{t.helpKicker}</p>
+          <h1 className="mt-3 font-title text-5xl leading-tight text-lime title-glow md:text-6xl">
             {t.helpTitle}
           </h1>
-          <p className="mt-4 max-w-[62ch] text-sm leading-relaxed text-mint md:text-base">{t.helpIntro}</p>
+          <p className="mt-4 max-w-[62ch] text-base leading-relaxed text-mint md:text-lg">{t.helpIntro}</p>
           <CrawlStrip />
         </Reveal>
 
         <div className="mt-10 flex flex-col gap-6">
           <Section num="01" title={t.s1Title}>
-            <p className="max-w-[68ch] text-sm leading-7 text-fog/90 md:text-[15px]">{t.s1Body}</p>
+            <p className="max-w-[68ch] text-[15px] leading-7 text-fog/90 md:text-base">{t.s1Body}</p>
           </Section>
 
           <Section num="02" title={t.s2Title}>
-            <ul className="flex flex-col gap-2.5">
+            <ul className="flex flex-col gap-3">
               {t.s2Items.map((item, i) => (
-                <li key={i} className="flex items-start gap-3 text-sm leading-6 text-fog/90 md:text-[15px]">
-                  <span aria-hidden className="mt-2 inline-block h-2 w-2 shrink-0 bg-lime shadow-[0_0_10px_rgba(184,240,77,0.6)]" />
+                <li key={i} className="flex items-start gap-3 text-[15px] leading-6 text-fog/90 md:text-base">
+                  <span aria-hidden className="mt-2 inline-block h-2 w-2 shrink-0 bg-lime shadow-[0_0_10px_var(--glow1)]" />
                   {item}
                 </li>
               ))}
@@ -270,8 +270,8 @@ export function HelpPage({ game, onClose }: { game: GameAPI; onClose: () => void
 
             <div className="mt-6 grid gap-4 md:grid-cols-2">
               <div className="clip-pixel-sm border border-hedge bg-shell2 p-4">
-                <p className="font-display text-[8px] tracking-[0.22em] text-teal">{t.helpKeysTitle}</p>
-                <ul className="mt-3 flex flex-col gap-2.5">
+                <p className="font-display text-[11px] text-teal">{t.helpKeysTitle}</p>
+                <ul className="mt-3.5 flex flex-col gap-3">
                   {keyRows.map(([keys, label]) => (
                     <li key={label} className="flex items-center justify-between gap-3">
                       <span className="flex items-center gap-1" dir="ltr">
@@ -281,18 +281,18 @@ export function HelpPage({ game, onClose }: { game: GameAPI; onClose: () => void
                           </kbd>
                         ))}
                       </span>
-                      <span className="text-[12px] text-mint">{label}</span>
+                      <span className="text-[14px] font-medium text-mint">{label}</span>
                     </li>
                   ))}
                 </ul>
               </div>
               <div className="clip-pixel-sm border border-hedge bg-shell2 p-4">
-                <p className="font-display text-[8px] tracking-[0.22em] text-teal">{t.helpTouchTitle}</p>
-                <ul className="mt-3 flex flex-col gap-3.5">
+                <p className="font-display text-[11px] text-teal">{t.helpTouchTitle}</p>
+                <ul className="mt-3.5 flex flex-col gap-4">
                   {touchRows.map((row, i) => (
                     <li key={i} className="flex items-start gap-3">
                       <span className="mt-0.5 shrink-0 text-lime">{row.icon}</span>
-                      <span className="text-[12px] leading-5 text-mint">{row.txt}</span>
+                      <span className="text-[14px] leading-6 text-mint">{row.txt}</span>
                     </li>
                   ))}
                 </ul>
@@ -301,11 +301,11 @@ export function HelpPage({ game, onClose }: { game: GameAPI; onClose: () => void
           </Section>
 
           <Section num="03" title={t.s3Title}>
-            <p className="max-w-[68ch] text-sm leading-7 text-fog/90 md:text-[15px]">{t.s3Body}</p>
+            <p className="max-w-[68ch] text-[15px] leading-7 text-fog/90 md:text-base">{t.s3Body}</p>
           </Section>
 
           <Section num="04" title={t.s4Title}>
-            <p className="text-sm leading-7 text-fog/90 md:text-[15px]">{t.s4Body}</p>
+            <p className="text-[15px] leading-7 text-fog/90 md:text-base">{t.s4Body}</p>
 
             <div dir="ltr" className="mt-5 flex flex-wrap items-stretch justify-center gap-2 md:gap-3">
               {[
@@ -315,30 +315,30 @@ export function HelpPage({ game, onClose }: { game: GameAPI; onClose: () => void
                 { top: "=", label: "", c: "var(--color-fern)" },
                 { top: fmt(20), label: t.s4Result, c: "#4de3c2" },
               ].map((chip, i) => (
-                <div key={i} className="flex flex-col items-center gap-1.5">
+                <div key={i} className="flex flex-col items-center gap-2">
                   <span
-                    className="clip-pixel-sm flex h-14 min-w-14 items-center justify-center border border-hedge bg-shell2 px-3 font-display text-base md:text-lg"
+                    className="clip-pixel-sm flex h-16 min-w-16 items-center justify-center border border-hedge bg-shell2 px-3 font-display text-xl md:text-2xl"
                     style={{ color: chip.c }}
                   >
                     {chip.top}
                   </span>
-                  <span className="font-display text-[6px] tracking-[0.14em] text-fern">{chip.label}</span>
+                  <span className="font-display text-[9px] text-fern">{chip.label}</span>
                 </div>
               ))}
             </div>
 
             <div className="mt-6 grid grid-cols-2 gap-2 sm:grid-cols-4">
               {outputs.map((o) => (
-                <div key={o.label} className="clip-pixel-sm flex flex-col items-center gap-1.5 border border-hedge bg-shell2 px-2 py-3">
-                  <span className="font-display text-[6px] tracking-[0.18em] text-fern">{o.label}</span>
-                  <span className="font-display text-sm" style={{ color: o.c }}>
+                <div key={o.label} className="clip-pixel-sm flex flex-col items-center gap-2 border border-hedge bg-shell2 px-2 py-3.5">
+                  <span className="font-display text-[9px] text-fern">{o.label}</span>
+                  <span className="font-display text-lg" style={{ color: o.c }}>
                     {o.v}
                   </span>
                 </div>
               ))}
             </div>
 
-            <p className="mt-5 border-s-2 border-teal/50 ps-3 text-[13px] leading-6 text-mint">{t.s4Save}</p>
+            <p className="mt-5 border-s-2 border-teal/50 ps-3 text-[14px] leading-6 text-mint">{t.s4Save}</p>
           </Section>
 
           <Section num="05" title={t.s5Title}>
@@ -346,10 +346,10 @@ export function HelpPage({ game, onClose }: { game: GameAPI; onClose: () => void
               {settings.map(([name, where], i) => (
                 <li
                   key={i}
-                  className="clip-pixel-sm flex flex-col gap-1.5 border border-hedge bg-shell2 px-4 py-3 transition-colors hover:border-mint/40 sm:flex-row sm:items-center sm:gap-4"
+                  className="clip-pixel-sm flex flex-col gap-1.5 border border-hedge bg-shell2 px-4 py-3.5 transition-colors hover:border-mint/40 sm:flex-row sm:items-center sm:gap-4"
                 >
-                  <span className="w-28 shrink-0 font-display text-[8px] tracking-[0.16em] text-amber">{name}</span>
-                  <span className="text-[13px] leading-5 text-mint">{where}</span>
+                  <span className="w-32 shrink-0 font-display text-[11px] text-amber">{name}</span>
+                  <span className="text-[14px] leading-6 text-mint">{where}</span>
                 </li>
               ))}
             </ul>
@@ -361,16 +361,16 @@ export function HelpPage({ game, onClose }: { game: GameAPI; onClose: () => void
                 return (
                   <span
                     key={key}
-                    className="flex flex-1 flex-col items-center gap-1 px-1 py-2"
+                    className="flex flex-1 flex-col items-center gap-1.5 px-1 py-2.5"
                     style={{
                       background: active ? `${d.color}1f` : "transparent",
                       boxShadow: active ? `inset 0 0 0 1px ${d.color}` : undefined,
                     }}
                   >
-                    <span className="font-display text-[7px]" style={{ color: active ? d.color : "var(--color-fern)" }}>
+                    <span className="font-display text-[10px]" style={{ color: active ? d.color : "var(--color-fern)" }}>
                       {t[DIFF_LABEL[key]]}
                     </span>
-                    <span className="font-display text-[7px]" style={{ color: active ? d.color : "var(--color-fern)" }}>
+                    <span className="font-display text-[10px]" style={{ color: active ? d.color : "var(--color-fern)" }}>
                       ×{fmt(d.mult)}
                     </span>
                   </span>
@@ -381,14 +381,14 @@ export function HelpPage({ game, onClose }: { game: GameAPI; onClose: () => void
         </div>
 
         <Reveal className="mt-10 flex flex-col items-center gap-4">
-          <p className="font-display text-[7px] tracking-[0.26em] text-fern">
+          <p className="font-display text-[10px] text-fern">
             {t.helpEsc}
-            <span className="blink-cursor ms-1.5 inline-block h-2.5 w-1.5 translate-y-px bg-lime" />
+            <span className="blink-cursor ms-1.5 inline-block h-3 w-2 translate-y-px bg-lime" />
           </p>
           <button
             type="button"
             onClick={onClose}
-            className="clip-pixel-sm flex items-center gap-2.5 bg-btn px-7 py-3.5 font-display text-[10px] text-inkdeep shadow-[0_0_28px_rgba(184,240,77,0.35)] transition-all duration-150 hover:-translate-y-0.5 hover:brightness-110 active:translate-y-0.5 cursor-pointer"
+            className="clip-pixel-sm flex items-center gap-2.5 bg-btn px-7 py-4 font-display text-[13px] text-inkdeep glow-lime transition-all duration-150 hover:-translate-y-0.5 hover:brightness-110 active:translate-y-0.5 cursor-pointer"
           >
             <BookIcon />
             {t.helpBack}

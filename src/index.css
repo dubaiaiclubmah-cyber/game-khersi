@@ -1,241 +1,289 @@
 @import "tailwindcss";
 
 /* ============================================================
-   DESIGN TOKENS
-   Every color in the app flows through these variables, so the
-   theme system (mode × palette) only has to override them here.
+   THEME SYSTEM — 4 palettes × (dark / light)
+   All UI colors flow through these variables.
    ============================================================ */
 
-@theme {
-  --font-display: "Press Start 2P", "Lalezar", "Vazirmatn", "Courier New", monospace;
-  --font-body: "Space Grotesk", "Vazirmatn", "Trebuchet MS", sans-serif;
-  --font-title: "Press Start 2P", "Lalezar", "Vazirmatn", "Courier New", monospace;
-
-  --color-pit: #06110c;
-  --color-frame: #08140e;
-  --color-shell2: #0a1712;
-  --color-shell: #0e2118;
-  --color-dim: #12281d;
-  --color-hedge: #1f3b2c;
-  --color-line: #244734;
-  --color-line2: #2c523d;
-  --color-fern: #567e69;
-  --color-mint: #8fb8a2;
-  --color-fog: #e2f5e8;
-  --color-lime: #b8f04d;
-  --color-btn: #b8f04d;
-  --color-teal: #4de3c2;
-  --color-amber: #ffc94d;
-  --color-coral: #ff6b5e;
-  --color-inkdeep: #0a1712;
+:root,
+[data-palette="forest"] {
+  --bg: #06110c;
+  --bg-grad: #0d2b1e;
+  --panel-a: rgba(17, 38, 27, 0.92);
+  --panel-b: rgba(9, 21, 15, 0.95);
+  --line: #1f3b2c;
+  --line-soft: #2f5a42;
+  --chip: #0e2118;
+  --cell: #0a1712;
+  --well: #13291e;
+  --text: #d7f0e0;
+  --mid: #a9d9bd;
+  --faint: #7fae93;
+  --on-acc: #0a1712;
+  --acc1: #b8f04d;
+  --acc2: #4de3c2;
+  --acc3: #ffc94d;
+  --acc4: #ff6b5e;
+  --glow1: rgba(184, 240, 77, 0.35);
+  --glow2: rgba(77, 227, 194, 0.32);
+  --glow3: rgba(255, 201, 77, 0.3);
+  --glow4: rgba(255, 107, 94, 0.3);
+  --scan: rgba(0, 0, 0, 0.5);
+  --lattice: rgba(159, 232, 192, 0.05);
+  --shadow: rgba(0, 0, 0, 0.4);
+  /* legacy --t-* aliases used by the guide/about pages */
+  --t-lattice: var(--lattice);
+  --t-glowTop: var(--bg-grad);
+  --t-glowA: var(--glow2);
+  --t-glowB: var(--glow3);
+  --t-glowC: var(--glow1);
+  --t-scan: 0.16;
 }
 
-/* non-utility theme vars (panels, veils, ambient glows) */
-:root {
-  --t-panelA: rgba(17, 38, 27, 0.92);
-  --t-panelB: rgba(9, 21, 15, 0.94);
-  --t-veil: rgba(4, 11, 8, 0.86);
-  --t-glowTop: #0d2b1e;
-  --t-glowA: rgba(77, 227, 194, 0.13);
-  --t-glowB: rgba(255, 201, 77, 0.1);
-  --t-glowC: rgba(184, 240, 77, 0.1);
-  --t-lattice: rgba(159, 232, 192, 0.045);
-  --t-scan: 0.14;
-  color-scheme: dark;
+[data-mode="light"] {
+  --t-scan: 0.08;
 }
 
-/* ---------------- palettes (dark mode) ---------------- */
-
-html[data-palette="ocean"] {
-  --color-pit: #050f1c;
-  --color-frame: #071527;
-  --color-shell2: #0a1a2e;
-  --color-shell: #0e2138;
-  --color-dim: #0d2036;
-  --color-hedge: #1d3a57;
-  --color-line: #24476b;
-  --color-line2: #2c547d;
-  --color-fern: #5c7f9e;
-  --color-mint: #8fb0cc;
-  --color-fog: #e0eefb;
-  --color-lime: #5eead4;
-  --color-btn: #5eead4;
-  --color-teal: #7dd3fc;
-  --t-panelA: rgba(14, 33, 56, 0.92);
-  --t-panelB: rgba(8, 20, 36, 0.94);
-  --t-veil: rgba(4, 12, 22, 0.86);
-  --t-glowTop: #0a2440;
-  --t-glowA: rgba(94, 234, 212, 0.12);
-  --t-glowB: rgba(125, 211, 252, 0.1);
-  --t-glowC: rgba(255, 201, 77, 0.07);
-  --t-lattice: rgba(148, 210, 255, 0.05);
+[data-palette="forest"][data-mode="light"] {
+  --bg: #edf3ea;
+  --bg-grad: #d8e8d2;
+  --panel-a: rgba(255, 255, 255, 0.92);
+  --panel-b: rgba(241, 247, 238, 0.96);
+  --line: #bfd2bc;
+  --line-soft: #93b292;
+  --chip: #ffffff;
+  --cell: #f3f8f0;
+  --well: #e0ebdb;
+  --text: #16281c;
+  --mid: #3d5c49;
+  --faint: #5f7f6b;
+  --on-acc: #ffffff;
+  --acc1: #4f9420;
+  --acc2: #0d9488;
+  --acc3: #b77e0e;
+  --acc4: #d94f3f;
+  --glow1: rgba(79, 148, 32, 0.28);
+  --glow2: rgba(13, 148, 136, 0.26);
+  --glow3: rgba(183, 126, 14, 0.24);
+  --glow4: rgba(217, 79, 63, 0.24);
+  --scan: rgba(25, 50, 32, 0.1);
+  --lattice: rgba(30, 72, 46, 0.08);
+  --shadow: rgba(60, 90, 70, 0.16);
 }
 
-html[data-palette="ember"] {
-  --color-pit: #140b08;
-  --color-frame: #1a0f0b;
-  --color-shell2: #20130e;
-  --color-shell: #291912;
-  --color-dim: #170e09;
-  --color-hedge: #4a2c1e;
-  --color-line: #5c3826;
-  --color-line2: #6f452e;
-  --color-fern: #9c7357;
-  --color-mint: #c49a7c;
-  --color-fog: #f8e9dc;
-  --color-lime: #ff9f43;
-  --color-btn: #ff9f43;
-  --color-teal: #ffd166;
-  --t-panelA: rgba(41, 25, 18, 0.92);
-  --t-panelB: rgba(24, 14, 10, 0.94);
-  --t-veil: rgba(16, 8, 5, 0.87);
-  --t-glowTop: #33150a;
-  --t-glowA: rgba(255, 159, 67, 0.13);
-  --t-glowB: rgba(255, 107, 94, 0.09);
-  --t-glowC: rgba(255, 209, 102, 0.08);
-  --t-lattice: rgba(255, 190, 120, 0.05);
+[data-palette="ocean"] {
+  --bg: #060d13;
+  --bg-grad: #0c2438;
+  --panel-a: rgba(14, 32, 47, 0.92);
+  --panel-b: rgba(8, 19, 29, 0.95);
+  --line: #1d3a52;
+  --line-soft: #2d5878;
+  --chip: #0c1c2a;
+  --cell: #081420;
+  --well: #122636;
+  --text: #dcecF7;
+  --mid: #a7c9de;
+  --faint: #7598b1;
+  --on-acc: #06131c;
+  --acc1: #5ee6a8;
+  --acc2: #4dd8e3;
+  --acc3: #ffc94d;
+  --acc4: #ff7a6b;
+  --glow1: rgba(94, 230, 168, 0.33);
+  --glow2: rgba(77, 216, 227, 0.32);
+  --glow3: rgba(255, 201, 77, 0.3);
+  --glow4: rgba(255, 122, 107, 0.3);
+  --scan: rgba(0, 0, 0, 0.5);
+  --lattice: rgba(140, 200, 240, 0.05);
+  --shadow: rgba(0, 0, 0, 0.42);
 }
 
-html[data-palette="night"] {
-  --color-pit: #0b0d12;
-  --color-frame: #0f1218;
-  --color-shell2: #12161e;
-  --color-shell: #171c26;
-  --color-dim: #0e1219;
-  --color-hedge: #2a3140;
-  --color-line: #333b4d;
-  --color-line2: #3d475c;
-  --color-fern: #6b7689;
-  --color-mint: #9aa7bb;
-  --color-fog: #e8edf5;
-  --color-lime: #a3e635;
-  --color-btn: #a3e635;
-  --color-teal: #22d3ee;
-  --t-panelA: rgba(23, 28, 38, 0.92);
-  --t-panelB: rgba(13, 16, 22, 0.94);
-  --t-veil: rgba(8, 10, 14, 0.87);
-  --t-glowTop: #141a26;
-  --t-glowA: rgba(163, 230, 53, 0.1);
-  --t-glowB: rgba(34, 211, 238, 0.1);
-  --t-glowC: rgba(251, 191, 36, 0.06);
-  --t-lattice: rgba(180, 200, 230, 0.045);
+[data-palette="ocean"][data-mode="light"] {
+  --bg: #eaf1f6;
+  --bg-grad: #d2e3ef;
+  --panel-a: rgba(255, 255, 255, 0.92);
+  --panel-b: rgba(239, 246, 250, 0.96);
+  --line: #b7cede;
+  --line-soft: #86a9c2;
+  --chip: #ffffff;
+  --cell: #f3f8fb;
+  --well: #dfeaf2;
+  --text: #10222f;
+  --mid: #3a5b72;
+  --faint: #5f7f97;
+  --on-acc: #ffffff;
+  --acc1: #0e9f6e;
+  --acc2: #0891b2;
+  --acc3: #b77e0e;
+  --acc4: #e05252;
+  --glow1: rgba(14, 159, 110, 0.26);
+  --glow2: rgba(8, 145, 178, 0.26);
+  --glow3: rgba(183, 126, 14, 0.24);
+  --glow4: rgba(224, 82, 82, 0.24);
+  --scan: rgba(20, 45, 65, 0.1);
+  --lattice: rgba(25, 70, 105, 0.08);
+  --shadow: rgba(50, 85, 110, 0.16);
 }
 
-/* ---------------- light mode ---------------- */
-
-html[data-mode="light"] {
-  color-scheme: light;
-  --color-pit: #eaf2e6;
-  --color-frame: #f4f8f0;
-  --color-shell2: #fdfffb;
-  --color-shell: #f2f7ee;
-  --color-dim: #dce8da;
-  --color-hedge: #c3d9c6;
-  --color-line: #aac7ae;
-  --color-line2: #93b79b;
-  --color-fern: #5e7d67;
-  --color-mint: #47684f;
-  --color-fog: #182f20;
-  --color-lime: #3e7d15;
-  --color-btn: #b8f04d;
-  --color-teal: #0c8f74;
-  --color-amber: #a86e00;
-  --color-coral: #cf3f32;
-  --color-inkdeep: #0a1712;
-  --t-panelA: rgba(255, 255, 255, 0.88);
-  --t-panelB: rgba(240, 247, 238, 0.92);
-  --t-veil: rgba(240, 247, 238, 0.82);
-  --t-glowTop: #d4e7cf;
-  --t-glowA: rgba(77, 180, 130, 0.18);
-  --t-glowB: rgba(220, 170, 40, 0.16);
-  --t-glowC: rgba(120, 190, 60, 0.16);
-  --t-lattice: rgba(30, 80, 50, 0.06);
-  --t-scan: 0.05;
+[data-palette="ember"] {
+  --bg: #130a07;
+  --bg-grad: #341a0d;
+  --panel-a: rgba(41, 22, 12, 0.92);
+  --panel-b: rgba(24, 13, 7, 0.95);
+  --line: #4c2c1b;
+  --line-soft: #6f452a;
+  --chip: #25130a;
+  --cell: #1a0d06;
+  --well: #301b0f;
+  --text: #f8e7d9;
+  --mid: #e3b896;
+  --faint: #b58a68;
+  --on-acc: #1a0d06;
+  --acc1: #ffb44d;
+  --acc2: #ff7a5e;
+  --acc3: #ffe08a;
+  --acc4: #7ee6c8;
+  --glow1: rgba(255, 180, 77, 0.33);
+  --glow2: rgba(255, 122, 94, 0.32);
+  --glow3: rgba(255, 224, 138, 0.3);
+  --glow4: rgba(126, 230, 200, 0.3);
+  --scan: rgba(0, 0, 0, 0.5);
+  --lattice: rgba(255, 200, 140, 0.05);
+  --shadow: rgba(0, 0, 0, 0.42);
 }
 
-html[data-mode="light"][data-palette="ocean"] {
-  --color-pit: #e6f0f9;
-  --color-frame: #f0f6fc;
-  --color-shell2: #fcfeff;
-  --color-shell: #f0f6fb;
-  --color-dim: #d8e5f0;
-  --color-hedge: #bfd4e6;
-  --color-line: #a2bfd8;
-  --color-line2: #8aabc7;
-  --color-fern: #5d7c96;
-  --color-mint: #446480;
-  --color-fog: #122a3e;
-  --color-lime: #0b7f6d;
-  --color-btn: #5eead4;
-  --color-teal: #0369a1;
-  --color-amber: #a16207;
-  --color-coral: #d43d30;
-  --t-panelA: rgba(255, 255, 255, 0.88);
-  --t-panelB: rgba(238, 246, 252, 0.92);
-  --t-veil: rgba(238, 246, 252, 0.82);
-  --t-glowTop: #cfe2f2;
-  --t-glowA: rgba(20, 150, 170, 0.15);
-  --t-glowB: rgba(160, 120, 20, 0.13);
-  --t-glowC: rgba(20, 120, 200, 0.13);
-  --t-lattice: rgba(20, 70, 120, 0.06);
+[data-palette="ember"][data-mode="light"] {
+  --bg: #f8efe7;
+  --bg-grad: #f0dcc8;
+  --panel-a: rgba(255, 255, 255, 0.92);
+  --panel-b: rgba(250, 243, 234, 0.96);
+  --line: #dcc2ab;
+  --line-soft: #bd9a7c;
+  --chip: #ffffff;
+  --cell: #faf3ea;
+  --well: #efe0d0;
+  --text: #2b1a10;
+  --mid: #67462f;
+  --faint: #8f6a4d;
+  --on-acc: #ffffff;
+  --acc1: #d97706;
+  --acc2: #e05252;
+  --acc3: #a16207;
+  --acc4: #0d9488;
+  --glow1: rgba(217, 119, 6, 0.26);
+  --glow2: rgba(224, 82, 82, 0.24);
+  --glow3: rgba(161, 98, 7, 0.24);
+  --glow4: rgba(13, 148, 136, 0.24);
+  --scan: rgba(70, 40, 15, 0.1);
+  --lattice: rgba(120, 75, 35, 0.08);
+  --shadow: rgba(120, 80, 45, 0.16);
 }
 
-html[data-mode="light"][data-palette="ember"] {
-  --color-pit: #f9ece2;
-  --color-frame: #fdf4ec;
-  --color-shell2: #fffaf5;
-  --color-shell: #faf0e7;
-  --color-dim: #f0ddcd;
-  --color-hedge: #e3c6b0;
-  --color-line: #d3ae92;
-  --color-line2: #c69c7d;
-  --color-fern: #8a6248;
-  --color-mint: #6e4a33;
-  --color-fog: #331c10;
-  --color-lime: #c25e00;
-  --color-btn: #ffb347;
-  --color-teal: #b45309;
-  --color-amber: #a16207;
-  --color-coral: #c73a2e;
-  --t-panelA: rgba(255, 255, 255, 0.88);
-  --t-panelB: rgba(250, 240, 231, 0.92);
-  --t-veil: rgba(250, 240, 231, 0.82);
-  --t-glowTop: #f3ddc8;
-  --t-glowA: rgba(230, 120, 40, 0.17);
-  --t-glowB: rgba(210, 80, 60, 0.13);
-  --t-glowC: rgba(240, 170, 50, 0.15);
-  --t-lattice: rgba(140, 80, 30, 0.07);
+[data-palette="night"] {
+  --bg: #0d0813;
+  --bg-grad: #261439;
+  --panel-a: rgba(30, 18, 45, 0.92);
+  --panel-b: rgba(17, 10, 26, 0.95);
+  --line: #382551;
+  --line-soft: #503a72;
+  --chip: #1c1229;
+  --cell: #130b1d;
+  --well: #251838;
+  --text: #eadff7;
+  --mid: #c0aadb;
+  --faint: #957cb3;
+  --on-acc: #130b1d;
+  --acc1: #c792ff;
+  --acc2: #6ee7d8;
+  --acc3: #ffc94d;
+  --acc4: #ff7aa8;
+  --glow1: rgba(199, 146, 255, 0.33);
+  --glow2: rgba(110, 231, 216, 0.3);
+  --glow3: rgba(255, 201, 77, 0.3);
+  --glow4: rgba(255, 122, 168, 0.3);
+  --scan: rgba(0, 0, 0, 0.5);
+  --lattice: rgba(190, 150, 255, 0.05);
+  --shadow: rgba(0, 0, 0, 0.42);
 }
 
-html[data-mode="light"][data-palette="night"] {
-  --color-pit: #eceef2;
-  --color-frame: #f4f6f9;
-  --color-shell2: #fdfeff;
-  --color-shell: #f2f4f8;
-  --color-dim: #dde1e9;
-  --color-hedge: #c7cdd9;
-  --color-line: #adb5c5;
-  --color-line2: #98a2b5;
-  --color-fern: #667085;
-  --color-mint: #4d566b;
-  --color-fog: #1a202c;
-  --color-lime: #4d7c0f;
-  --color-btn: #a3e635;
-  --color-teal: #0e7490;
-  --color-amber: #a16207;
-  --color-coral: #d43d50;
-  --t-panelA: rgba(255, 255, 255, 0.88);
-  --t-panelB: rgba(240, 243, 248, 0.92);
-  --t-veil: rgba(240, 243, 248, 0.82);
-  --t-glowTop: #dbe1ec;
-  --t-glowA: rgba(90, 160, 40, 0.14);
-  --t-glowB: rgba(30, 150, 180, 0.13);
-  --t-glowC: rgba(200, 150, 20, 0.11);
-  --t-lattice: rgba(40, 60, 100, 0.06);
+[data-palette="night"][data-mode="light"] {
+  --bg: #f1edf7;
+  --bg-grad: #e1d7f0;
+  --panel-a: rgba(255, 255, 255, 0.92);
+  --panel-b: rgba(246, 242, 251, 0.96);
+  --line: #cbbde0;
+  --line-soft: #a58fc6;
+  --chip: #ffffff;
+  --cell: #f7f3fb;
+  --well: #e9e1f3;
+  --text: #201430;
+  --mid: #4d3968;
+  --faint: #756092;
+  --on-acc: #ffffff;
+  --acc1: #7c3aed;
+  --acc2: #0d9488;
+  --acc3: #b45309;
+  --acc4: #db2777;
+  --glow1: rgba(124, 58, 237, 0.24);
+  --glow2: rgba(13, 148, 136, 0.24);
+  --glow3: rgba(180, 83, 9, 0.24);
+  --glow4: rgba(219, 39, 119, 0.22);
+  --scan: rgba(50, 25, 75, 0.1);
+  --lattice: rgba(90, 50, 140, 0.08);
+  --shadow: rgba(90, 60, 130, 0.16);
 }
 
 /* ============================================================
-   BASE
+   TAILWAND THEME — utilities resolve to the live variables
+   ============================================================ */
+
+@theme {
+  --font-display: "Press Start 2P", "Courier New", monospace;
+  --font-body: "Space Grotesk", "Trebuchet MS", sans-serif;
+  --font-title: "Press Start 2P", "Courier New", monospace;
+  --color-pit: var(--bg);
+  --color-hedge: var(--line);
+  --color-linesoft: var(--line-soft);
+  --color-chip: var(--chip);
+  --color-cell: var(--cell);
+  --color-well: var(--well);
+  --color-fern: var(--faint);
+  --color-mint: var(--mid);
+  --color-fog: var(--text);
+  --color-ink: var(--on-acc);
+  --color-lime: var(--acc1);
+  --color-teal: var(--acc2);
+  --color-amber: var(--acc3);
+  --color-coral: var(--acc4);
+  /* fixed CRT colors — the game screen stays a dark cabinet monitor */
+  --color-crtbg: #08130e;
+  --color-crtline: #244734;
+  --color-crtchip: #0a1712;
+  --color-crtdim: #9fe8c0;
+  --color-crtfaint: #6f9a82;
+  --color-crtlime: #b8f04d;
+  --color-crtteal: #4de3c2;
+  --color-crtamber: #ffc94d;
+  --color-crtcoral: #ff6b5e;
+  --color-crtink: #0a1712;
+  /* legacy vocabulary — kept in sync with the variables above */
+  --color-shell: var(--chip);
+  --color-shell2: var(--cell);
+  --color-line: var(--line);
+  --color-line2: var(--line-soft);
+  --color-frame: var(--cell);
+  --color-btn: var(--acc1);
+  --color-inkdeep: var(--on-acc);
+  --color-dim: var(--well);
+}
+
+/* the game-cabinet overlay veil always stays dark (it sits on the CRT) */
+.veil {
+  background: rgba(4, 11, 8, 0.86);
+}
+
+/* ============================================================
+   BASE + TYPOGRAPHY
    ============================================================ */
 
 html,
@@ -245,87 +293,57 @@ body {
 
 body {
   margin: 0;
-  background-color: var(--color-pit);
-  color: var(--color-fog);
+  background-color: var(--bg);
+  color: var(--text);
   font-family: var(--font-body);
   font-weight: 500;
   -webkit-tap-highlight-color: transparent;
   overflow-x: hidden;
-}
-
-::selection {
-  background: var(--color-btn);
-  color: var(--color-inkdeep);
-}
-
-::-webkit-scrollbar {
-  width: 10px;
-}
-::-webkit-scrollbar-track {
-  background: var(--color-frame);
-}
-::-webkit-scrollbar-thumb {
-  background: var(--color-hedge);
-  border: 2px solid var(--color-frame);
+  transition: background-color 0.35s ease, color 0.35s ease;
 }
 
 .font-title {
   font-family: var(--font-title);
 }
 
-/* ============================================================
-   TYPOGRAPHY — readability pass
-   The pixel labels used to sit at 6–11px. These rules lift every
-   tier to a readable size while preserving the size hierarchy,
-   in both languages and on mobile.
-   ============================================================ */
-
-.text-\[6px\] { font-size: 0.5625rem; }  /* 9px  */
-.text-\[7px\] { font-size: 0.625rem; }   /* 10px */
-.text-\[8px\] { font-size: 0.6875rem; }  /* 11px */
-.text-\[9px\] { font-size: 0.75rem; }    /* 12px */
-.text-\[10px\] { font-size: 0.8125rem; } /* 13px */
-.text-\[11px\] { font-size: 0.875rem; }  /* 14px */
-.text-\[12px\] { font-size: 0.9375rem; } /* 15px */
-.text-\[13px\] { font-size: 1rem; }      /* 16px */
-
-.font-display,
-.font-title {
-  line-height: 1.5;
+/* the pixel face has no bold — fake a little weight for legibility */
+html[lang="en"] .font-display {
+  text-shadow: 0.6px 0 0 currentColor;
 }
 
-/* Persian: Lalezar renders the display slots (Press Start 2P has no
-   Persian glyphs); it needs room and must never be letter-spaced. */
-html[lang="fa"] .font-display,
-html[lang="fa"] .font-title {
-  letter-spacing: 0.02em !important;
-  line-height: 1.7;
-  font-size: 1.12em;
+/* Persian: Press Start 2P has no Arabic glyphs → use Vazirmatn 800 */
+html[lang="fa"] {
+  --font-body: "Vazirmatn", "Space Grotesk", "Tahoma", sans-serif;
+  --font-title: "Lalezar", "Vazirmatn", sans-serif;
+  --font-display: "Vazirmatn", "Tahoma", sans-serif;
 }
-
 html[lang="fa"] body {
   font-weight: 500;
-  line-height: 1.8;
+}
+html[lang="fa"] .font-display {
+  font-weight: 800;
+  letter-spacing: 0.01em !important;
+  font-size: 1.08em;
 }
 
-.kbd {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 27px;
-  padding: 5px 6px 6px;
-  border: 1px solid var(--color-line2);
-  border-bottom-width: 3px;
-  background: var(--color-shell);
-  color: var(--color-mint);
-  font-family: var(--font-display);
-  font-size: 10px;
-  line-height: 1;
-  letter-spacing: 0.04em;
+::selection {
+  background: var(--acc1);
+  color: var(--on-acc);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border: 2px solid var(--bg);
 }
 
 /* ============================================================
-   SURFACES
+   SHARED UI KIT
    ============================================================ */
 
 .clip-pixel {
@@ -346,15 +364,39 @@ html[lang="fa"] body {
 }
 
 .panel {
-  background: linear-gradient(180deg, var(--t-panelA), var(--t-panelB));
-  border: 1px solid var(--color-hedge);
-  box-shadow:
-    0 12px 32px rgba(0, 0, 0, 0.28),
-    inset 0 1px 0 rgba(159, 232, 192, 0.07);
+  background: linear-gradient(180deg, var(--panel-a), var(--panel-b));
+  border: 1px solid var(--line);
+  box-shadow: 0 12px 32px var(--shadow), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  transition: background 0.35s ease, border-color 0.35s ease;
 }
 
-.veil {
-  background: var(--t-veil);
+.kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  padding: 5px 6px 6px;
+  border: 1px solid var(--line-soft);
+  border-bottom-width: 3px;
+  background: var(--chip);
+  color: var(--mid);
+  font-family: "Press Start 2P", monospace;
+  font-size: 9px;
+  line-height: 1;
+  letter-spacing: 0.04em;
+}
+
+.glow-lime {
+  box-shadow: 0 0 26px var(--glow1);
+}
+.glow-teal {
+  box-shadow: 0 0 26px var(--glow2);
+}
+.glow-amber {
+  box-shadow: 0 0 26px var(--glow3);
+}
+.title-glow {
+  text-shadow: 0 0 20px var(--glow1);
 }
 
 /* ============================================================
@@ -362,7 +404,7 @@ html[lang="fa"] body {
    ============================================================ */
 
 @keyframes pop {
-  0% { transform: scale(1.55); color: #ffffff; }
+  0% { transform: scale(1.55); }
   100% { transform: scale(1); }
 }
 .score-pop {
