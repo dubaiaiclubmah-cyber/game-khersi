@@ -1,0 +1,460 @@
+@import "tailwindcss";
+
+/* ============================================================
+   DESIGN TOKENS
+   Every color in the app flows through these variables, so the
+   theme system (mode × palette) only has to override them here.
+   ============================================================ */
+
+@theme {
+  --font-display: "Press Start 2P", "Lalezar", "Vazirmatn", "Courier New", monospace;
+  --font-body: "Space Grotesk", "Vazirmatn", "Trebuchet MS", sans-serif;
+  --font-title: "Press Start 2P", "Lalezar", "Vazirmatn", "Courier New", monospace;
+
+  --color-pit: #06110c;
+  --color-frame: #08140e;
+  --color-shell2: #0a1712;
+  --color-shell: #0e2118;
+  --color-dim: #12281d;
+  --color-hedge: #1f3b2c;
+  --color-line: #244734;
+  --color-line2: #2c523d;
+  --color-fern: #567e69;
+  --color-mint: #8fb8a2;
+  --color-fog: #e2f5e8;
+  --color-lime: #b8f04d;
+  --color-btn: #b8f04d;
+  --color-teal: #4de3c2;
+  --color-amber: #ffc94d;
+  --color-coral: #ff6b5e;
+  --color-inkdeep: #0a1712;
+}
+
+/* non-utility theme vars (panels, veils, ambient glows) */
+:root {
+  --t-panelA: rgba(17, 38, 27, 0.92);
+  --t-panelB: rgba(9, 21, 15, 0.94);
+  --t-veil: rgba(4, 11, 8, 0.86);
+  --t-glowTop: #0d2b1e;
+  --t-glowA: rgba(77, 227, 194, 0.13);
+  --t-glowB: rgba(255, 201, 77, 0.1);
+  --t-glowC: rgba(184, 240, 77, 0.1);
+  --t-lattice: rgba(159, 232, 192, 0.045);
+  --t-scan: 0.14;
+  color-scheme: dark;
+}
+
+/* ---------------- palettes (dark mode) ---------------- */
+
+html[data-palette="ocean"] {
+  --color-pit: #050f1c;
+  --color-frame: #071527;
+  --color-shell2: #0a1a2e;
+  --color-shell: #0e2138;
+  --color-dim: #0d2036;
+  --color-hedge: #1d3a57;
+  --color-line: #24476b;
+  --color-line2: #2c547d;
+  --color-fern: #5c7f9e;
+  --color-mint: #8fb0cc;
+  --color-fog: #e0eefb;
+  --color-lime: #5eead4;
+  --color-btn: #5eead4;
+  --color-teal: #7dd3fc;
+  --t-panelA: rgba(14, 33, 56, 0.92);
+  --t-panelB: rgba(8, 20, 36, 0.94);
+  --t-veil: rgba(4, 12, 22, 0.86);
+  --t-glowTop: #0a2440;
+  --t-glowA: rgba(94, 234, 212, 0.12);
+  --t-glowB: rgba(125, 211, 252, 0.1);
+  --t-glowC: rgba(255, 201, 77, 0.07);
+  --t-lattice: rgba(148, 210, 255, 0.05);
+}
+
+html[data-palette="ember"] {
+  --color-pit: #140b08;
+  --color-frame: #1a0f0b;
+  --color-shell2: #20130e;
+  --color-shell: #291912;
+  --color-dim: #170e09;
+  --color-hedge: #4a2c1e;
+  --color-line: #5c3826;
+  --color-line2: #6f452e;
+  --color-fern: #9c7357;
+  --color-mint: #c49a7c;
+  --color-fog: #f8e9dc;
+  --color-lime: #ff9f43;
+  --color-btn: #ff9f43;
+  --color-teal: #ffd166;
+  --t-panelA: rgba(41, 25, 18, 0.92);
+  --t-panelB: rgba(24, 14, 10, 0.94);
+  --t-veil: rgba(16, 8, 5, 0.87);
+  --t-glowTop: #33150a;
+  --t-glowA: rgba(255, 159, 67, 0.13);
+  --t-glowB: rgba(255, 107, 94, 0.09);
+  --t-glowC: rgba(255, 209, 102, 0.08);
+  --t-lattice: rgba(255, 190, 120, 0.05);
+}
+
+html[data-palette="night"] {
+  --color-pit: #0b0d12;
+  --color-frame: #0f1218;
+  --color-shell2: #12161e;
+  --color-shell: #171c26;
+  --color-dim: #0e1219;
+  --color-hedge: #2a3140;
+  --color-line: #333b4d;
+  --color-line2: #3d475c;
+  --color-fern: #6b7689;
+  --color-mint: #9aa7bb;
+  --color-fog: #e8edf5;
+  --color-lime: #a3e635;
+  --color-btn: #a3e635;
+  --color-teal: #22d3ee;
+  --t-panelA: rgba(23, 28, 38, 0.92);
+  --t-panelB: rgba(13, 16, 22, 0.94);
+  --t-veil: rgba(8, 10, 14, 0.87);
+  --t-glowTop: #141a26;
+  --t-glowA: rgba(163, 230, 53, 0.1);
+  --t-glowB: rgba(34, 211, 238, 0.1);
+  --t-glowC: rgba(251, 191, 36, 0.06);
+  --t-lattice: rgba(180, 200, 230, 0.045);
+}
+
+/* ---------------- light mode ---------------- */
+
+html[data-mode="light"] {
+  color-scheme: light;
+  --color-pit: #eaf2e6;
+  --color-frame: #f4f8f0;
+  --color-shell2: #fdfffb;
+  --color-shell: #f2f7ee;
+  --color-dim: #dce8da;
+  --color-hedge: #c3d9c6;
+  --color-line: #aac7ae;
+  --color-line2: #93b79b;
+  --color-fern: #5e7d67;
+  --color-mint: #47684f;
+  --color-fog: #182f20;
+  --color-lime: #3e7d15;
+  --color-btn: #b8f04d;
+  --color-teal: #0c8f74;
+  --color-amber: #a86e00;
+  --color-coral: #cf3f32;
+  --color-inkdeep: #0a1712;
+  --t-panelA: rgba(255, 255, 255, 0.88);
+  --t-panelB: rgba(240, 247, 238, 0.92);
+  --t-veil: rgba(240, 247, 238, 0.82);
+  --t-glowTop: #d4e7cf;
+  --t-glowA: rgba(77, 180, 130, 0.18);
+  --t-glowB: rgba(220, 170, 40, 0.16);
+  --t-glowC: rgba(120, 190, 60, 0.16);
+  --t-lattice: rgba(30, 80, 50, 0.06);
+  --t-scan: 0.05;
+}
+
+html[data-mode="light"][data-palette="ocean"] {
+  --color-pit: #e6f0f9;
+  --color-frame: #f0f6fc;
+  --color-shell2: #fcfeff;
+  --color-shell: #f0f6fb;
+  --color-dim: #d8e5f0;
+  --color-hedge: #bfd4e6;
+  --color-line: #a2bfd8;
+  --color-line2: #8aabc7;
+  --color-fern: #5d7c96;
+  --color-mint: #446480;
+  --color-fog: #122a3e;
+  --color-lime: #0b7f6d;
+  --color-btn: #5eead4;
+  --color-teal: #0369a1;
+  --color-amber: #a16207;
+  --color-coral: #d43d30;
+  --t-panelA: rgba(255, 255, 255, 0.88);
+  --t-panelB: rgba(238, 246, 252, 0.92);
+  --t-veil: rgba(238, 246, 252, 0.82);
+  --t-glowTop: #cfe2f2;
+  --t-glowA: rgba(20, 150, 170, 0.15);
+  --t-glowB: rgba(160, 120, 20, 0.13);
+  --t-glowC: rgba(20, 120, 200, 0.13);
+  --t-lattice: rgba(20, 70, 120, 0.06);
+}
+
+html[data-mode="light"][data-palette="ember"] {
+  --color-pit: #f9ece2;
+  --color-frame: #fdf4ec;
+  --color-shell2: #fffaf5;
+  --color-shell: #faf0e7;
+  --color-dim: #f0ddcd;
+  --color-hedge: #e3c6b0;
+  --color-line: #d3ae92;
+  --color-line2: #c69c7d;
+  --color-fern: #8a6248;
+  --color-mint: #6e4a33;
+  --color-fog: #331c10;
+  --color-lime: #c25e00;
+  --color-btn: #ffb347;
+  --color-teal: #b45309;
+  --color-amber: #a16207;
+  --color-coral: #c73a2e;
+  --t-panelA: rgba(255, 255, 255, 0.88);
+  --t-panelB: rgba(250, 240, 231, 0.92);
+  --t-veil: rgba(250, 240, 231, 0.82);
+  --t-glowTop: #f3ddc8;
+  --t-glowA: rgba(230, 120, 40, 0.17);
+  --t-glowB: rgba(210, 80, 60, 0.13);
+  --t-glowC: rgba(240, 170, 50, 0.15);
+  --t-lattice: rgba(140, 80, 30, 0.07);
+}
+
+html[data-mode="light"][data-palette="night"] {
+  --color-pit: #eceef2;
+  --color-frame: #f4f6f9;
+  --color-shell2: #fdfeff;
+  --color-shell: #f2f4f8;
+  --color-dim: #dde1e9;
+  --color-hedge: #c7cdd9;
+  --color-line: #adb5c5;
+  --color-line2: #98a2b5;
+  --color-fern: #667085;
+  --color-mint: #4d566b;
+  --color-fog: #1a202c;
+  --color-lime: #4d7c0f;
+  --color-btn: #a3e635;
+  --color-teal: #0e7490;
+  --color-amber: #a16207;
+  --color-coral: #d43d50;
+  --t-panelA: rgba(255, 255, 255, 0.88);
+  --t-panelB: rgba(240, 243, 248, 0.92);
+  --t-veil: rgba(240, 243, 248, 0.82);
+  --t-glowTop: #dbe1ec;
+  --t-glowA: rgba(90, 160, 40, 0.14);
+  --t-glowB: rgba(30, 150, 180, 0.13);
+  --t-glowC: rgba(200, 150, 20, 0.11);
+  --t-lattice: rgba(40, 60, 100, 0.06);
+}
+
+/* ============================================================
+   BASE
+   ============================================================ */
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background-color: var(--color-pit);
+  color: var(--color-fog);
+  font-family: var(--font-body);
+  font-weight: 500;
+  -webkit-tap-highlight-color: transparent;
+  overflow-x: hidden;
+}
+
+::selection {
+  background: var(--color-btn);
+  color: var(--color-inkdeep);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-frame);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-hedge);
+  border: 2px solid var(--color-frame);
+}
+
+.font-title {
+  font-family: var(--font-title);
+}
+
+/* ============================================================
+   TYPOGRAPHY — readability pass
+   The pixel labels used to sit at 6–11px. These rules lift every
+   tier to a readable size while preserving the size hierarchy,
+   in both languages and on mobile.
+   ============================================================ */
+
+.text-\[6px\] { font-size: 0.5625rem; }  /* 9px  */
+.text-\[7px\] { font-size: 0.625rem; }   /* 10px */
+.text-\[8px\] { font-size: 0.6875rem; }  /* 11px */
+.text-\[9px\] { font-size: 0.75rem; }    /* 12px */
+.text-\[10px\] { font-size: 0.8125rem; } /* 13px */
+.text-\[11px\] { font-size: 0.875rem; }  /* 14px */
+.text-\[12px\] { font-size: 0.9375rem; } /* 15px */
+.text-\[13px\] { font-size: 1rem; }      /* 16px */
+
+.font-display,
+.font-title {
+  line-height: 1.5;
+}
+
+/* Persian: Lalezar renders the display slots (Press Start 2P has no
+   Persian glyphs); it needs room and must never be letter-spaced. */
+html[lang="fa"] .font-display,
+html[lang="fa"] .font-title {
+  letter-spacing: 0.02em !important;
+  line-height: 1.7;
+  font-size: 1.12em;
+}
+
+html[lang="fa"] body {
+  font-weight: 500;
+  line-height: 1.8;
+}
+
+.kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 27px;
+  padding: 5px 6px 6px;
+  border: 1px solid var(--color-line2);
+  border-bottom-width: 3px;
+  background: var(--color-shell);
+  color: var(--color-mint);
+  font-family: var(--font-display);
+  font-size: 10px;
+  line-height: 1;
+  letter-spacing: 0.04em;
+}
+
+/* ============================================================
+   SURFACES
+   ============================================================ */
+
+.clip-pixel {
+  clip-path: polygon(
+    0 8px, 8px 8px, 8px 0,
+    calc(100% - 8px) 0, calc(100% - 8px) 8px, 100% 8px,
+    100% calc(100% - 8px), calc(100% - 8px) calc(100% - 8px), calc(100% - 8px) 100%,
+    8px 100%, 8px calc(100% - 8px), 0 calc(100% - 8px)
+  );
+}
+.clip-pixel-sm {
+  clip-path: polygon(
+    0 5px, 5px 5px, 5px 0,
+    calc(100% - 5px) 0, calc(100% - 5px) 5px, 100% 5px,
+    100% calc(100% - 5px), calc(100% - 5px) calc(100% - 5px), calc(100% - 5px) 100%,
+    5px 100%, 5px calc(100% - 5px), 0 calc(100% - 5px)
+  );
+}
+
+.panel {
+  background: linear-gradient(180deg, var(--t-panelA), var(--t-panelB));
+  border: 1px solid var(--color-hedge);
+  box-shadow:
+    0 12px 32px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(159, 232, 192, 0.07);
+}
+
+.veil {
+  background: var(--t-veil);
+}
+
+/* ============================================================
+   MOTION
+   ============================================================ */
+
+@keyframes pop {
+  0% { transform: scale(1.55); color: #ffffff; }
+  100% { transform: scale(1); }
+}
+.score-pop {
+  display: inline-block;
+  animation: pop 0.28s cubic-bezier(0.2, 1.6, 0.4, 1);
+}
+
+@keyframes drift-a {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(50px, -40px, 0) scale(1.08); }
+}
+@keyframes drift-b {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(-60px, 34px, 0) scale(1.06); }
+}
+
+@keyframes floaty {
+  0%, 100% { transform: translateY(0); opacity: 0.45; }
+  50% { transform: translateY(-16px); opacity: 0.95; }
+}
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.marquee-track {
+  animation: marquee 30s linear infinite;
+}
+.marquee:hover .marquee-track {
+  animation-play-state: paused;
+}
+
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(16px) scale(0.97); }
+  to { opacity: 1; transform: none; }
+}
+.rise-in {
+  animation: rise-in 0.38s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+}
+.rise-in-delayed {
+  animation: rise-in 0.45s 0.3s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+}
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(-16px) scale(0.92); }
+  to { opacity: 1; transform: none; }
+}
+.toast-in {
+  animation: toast-in 0.34s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+}
+
+@keyframes crawl {
+  0% { left: -28%; }
+  100% { left: 108%; }
+}
+.crawl-snake {
+  animation: crawl 7s linear infinite;
+}
+
+@keyframes wiggle {
+  0%, 100% { transform: rotate(-2.5deg); }
+  50% { transform: rotate(2.5deg); }
+}
+.wiggle {
+  animation: wiggle 0.5s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.35; transform: scale(0.65); }
+}
+.pulse-dot {
+  animation: pulse-dot 1.5s ease-in-out infinite;
+}
+
+@keyframes blink-cursor {
+  0%, 55% { opacity: 1; }
+  56%, 100% { opacity: 0; }
+}
+.blink-cursor {
+  animation: blink-cursor 1.1s steps(1) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track,
+  .wiggle,
+  .pulse-dot,
+  .score-pop {
+    animation: none;
+  }
+  .crawl-snake {
+    animation: none;
+    left: 36%;
+  }
+}
