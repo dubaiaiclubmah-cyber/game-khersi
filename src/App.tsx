@@ -395,7 +395,7 @@ function Cabinet() {
               <h1 className="truncate font-title text-2xl leading-none text-lime title-glow sm:text-3xl md:text-4xl">
                 {t.brand}
               </h1>
-              <p className="mt-2.5 font-display text-[9px] text-mint sm:text-[10px]">
+              <p className="mt-2.5 font-display text-[9px] text-mint max-[380px]:hidden sm:text-[10px]">
                 {t.tagline}
               </p>
             </div>

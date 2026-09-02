@@ -291,6 +291,10 @@ body {
   height: 100%;
 }
 
+html {
+  overscroll-behavior-y: contain;
+}
+
 body {
   margin: 0;
   background-color: var(--bg);
@@ -298,6 +302,7 @@ body {
   font-family: var(--font-body);
   font-weight: 500;
   -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
   overflow-x: hidden;
   transition: background-color 0.35s ease, color 0.35s ease;
 }

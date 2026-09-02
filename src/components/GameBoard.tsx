@@ -100,12 +100,12 @@ export function GameBoard({ game }: { game: GameAPI }) {
               {statusWord(t, status)}
             </span>
             <span
-              className="clip-pixel-sm hidden items-center gap-1.5 border px-2 py-1 sm:flex"
+              className="clip-pixel-sm flex items-center gap-1.5 border px-1.5 py-1 min-[420px]:px-2"
               style={{ borderColor: wdef.foodMain, background: `${wdef.foodMain}14`, color: wdef.foodMain }}
               title={t[WORLD_LABEL[world]]}
             >
               <WorldGlyph world={world} size={13} />
-              <span className="font-display text-[9px]">{t[WORLD_LABEL[world]]}</span>
+              <span className="hidden font-display text-[9px] min-[480px]:inline">{t[WORLD_LABEL[world]]}</span>
             </span>
           </div>
           <div className="flex items-center gap-3.5 font-display text-[11px]">
@@ -114,7 +114,7 @@ export function GameBoard({ game }: { game: GameAPI }) {
               {fmt(stars)}
             </span>
             <span style={{ color: diff.color }}>×{fmt(diff.mult)}</span>
-            <span className="text-fern">
+            <span className="max-[380px]:hidden text-fern">
               {t.lenShort} {fmt(String(length).padStart(2, "0"))}
             </span>
           </div>

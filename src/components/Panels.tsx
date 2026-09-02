@@ -490,7 +490,7 @@ export function MobileStats({ game }: { game: GameAPI }) {
     {
       label: t.score,
       node: (
-        <span key={game.score} className="score-pop font-display text-base text-amber">
+        <span key={game.score} className="score-pop max-w-full truncate font-display text-sm text-amber min-[400px]:text-base">
           {fmt(game.score)}
         </span>
       ),
@@ -498,14 +498,14 @@ export function MobileStats({ game }: { game: GameAPI }) {
     {
       label: t.best,
       node: (
-        <span className={"font-display text-base " + (game.isNewBest ? "text-lime" : "text-teal")}>
+        <span className={"max-w-full truncate font-display text-sm min-[400px]:text-base " + (game.isNewBest ? "text-lime" : "text-teal")}>
           {fmt(game.best)}
         </span>
       ),
     },
     {
       label: t.lenShort,
-      node: <span className="font-display text-base text-fog">{fmt(3 + game.eaten)}</span>,
+      node: <span className="max-w-full truncate font-display text-sm text-fog min-[400px]:text-base">{fmt(3 + game.eaten)}</span>,
     },
     {
       label: t.tempo,
@@ -587,14 +587,24 @@ export function MobileWorlds({ game }: { game: GameAPI }) {
               type="button"
               onClick={() => game.changeWorld(key)}
               aria-pressed={active}
-              className="clip-pixel-sm flex flex-col items-center gap-1.5 px-1 py-2.5 transition-all duration-150 active:scale-95 cursor-pointer"
+              className="clip-pixel-sm relative flex min-w-0 flex-col items-center gap-1.5 px-1 py-2.5 transition-all duration-150 active:scale-95 cursor-pointer"
               style={{
                 background: active ? `${w.foodMain}1f` : "var(--color-shell2)",
                 boxShadow: active ? `inset 0 0 0 1.5px ${w.foodMain}, 0 0 14px ${w.foodMain}33` : "inset 0 0 0 1px var(--color-hedge)",
               }}
             >
+              <span
+                aria-hidden
+                className="absolute top-1 start-1 font-display text-[8px] leading-none"
+                style={{ color: active ? w.foodMain : "var(--color-fern)" }}
+              >
+                {WORLD_ORDER.indexOf(key) + 1}
+              </span>
               <WorldGlyph world={key} size={22} />
-              <span className="font-display text-[9px]" style={{ color: active ? w.foodMain : "var(--color-mint)" }}>
+              <span
+                className="w-full truncate text-center font-display text-[9px]"
+                style={{ color: active ? w.foodMain : "var(--color-mint)" }}
+              >
                 {t[WORLD_LABEL[key]]}
               </span>
             </button>

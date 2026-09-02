@@ -60,8 +60,8 @@ export interface Dict {
   helpKeysTitle: string; helpTouchTitle: string; helpTouch1: string; helpTouch2: string; helpTouch3: string;
   s3Title: string; s3Body: string; s4Title: string; s4Body: string;
   s4Formula: string; s4Times: string; s4Result: string; s4Save: string;
-  s5Title: string; s5n1: string; s5n2: string; s5n3: string; s5n4: string;
-  s5w1: string; s5w2: string; s5w3: string; s5w4: string; helpEsc: string;
+  s5Title: string; s5n1: string; s5n2: string; s5n3: string; s5n4: string; s5n5: string;
+  s5w1: string; s5w2: string; s5w3: string; s5w4: string; s5w5: string; helpEsc: string;
   aboutBtn: string; aboutBack: string; aboutKicker: string; aboutTitle: string;
   makerKicker: string; makerLine1: string; makerLine2: string; makerContact: string; makerPhone: string;
   footerLeft: string; footerRight: string; footerAbout: string;
@@ -138,11 +138,12 @@ const EN: Dict = {
   s4Formula: "EACH APPLE", s4Times: "TIER MULTIPLIER", s4Result: "POINTS",
   s4Save: "Your best score per tier, medals, recent runs and every setting are saved automatically in this browser — no account needed.",
   s5Title: "Where are the settings?",
-  s5n1: "SPEED TIER", s5n2: "LANGUAGE", s5n3: "SOUND", s5n4: "RECORDS",
+  s5n1: "SPEED TIER", s5n2: "LANGUAGE", s5n3: "SOUND", s5n4: "RECORDS", s5n5: "WORLD",
   s5w1: "The “SELECT SPEED” panel beside the board (or above the pad on phones).",
   s5w2: "The EN / فا switch at the top — the whole cabinet flips, even the digits.",
   s5w3: "The speaker button in the header. M for mute on keyboards.",
   s5w4: "Stored in your browser. Clear site data and the pit forgets everything.",
+  s5w5: "The “SELECT WORLD” panel beside the board — 4 lands with their own food and rules, or press keys 1–4.",
   helpEsc: "PRESS ESC TO RETURN TO THE PIT",
   aboutBtn: "THE MAKER", aboutBack: "BACK TO THE GAME", aboutKicker: "THE HUMAN BEHIND THE PIT",
   aboutTitle: "About the maker",
@@ -224,11 +225,12 @@ const FA: Dict = {
   s4Formula: "هر سیب", s4Times: "ضریب سطح", s4Result: "امتیاز",
   s4Save: "رکورد هر سطح، مدال‌ها، بازی‌های اخیر و همهٔ تنظیم‌ها خودکار در همین مرورگر ذخیره می‌شوند — بدون نیاز به حساب کاربری.",
   s5Title: "تنظیمات کجاست؟",
-  s5n1: "سطح سرعت", s5n2: "زبان", s5n3: "صدا", s5n4: "رکوردها",
+  s5n1: "سطح سرعت", s5n2: "زبان", s5n3: "صدا", s5n4: "رکوردها", s5n5: "لیول",
   s5w1: "پنل «انتخاب سرعت» کنار زمین بازی (در گوشی بالای پد).",
   s5w2: "سوییچ EN / فا بالای صفحه — کل بازی می‌چرخد، حتی رقم‌ها.",
   s5w3: "دکمهٔ بلندگو در هدر. در کیبورد کلید M.",
   s5w4: "در مرورگر خودت ذخیره می‌شوند. اگر داده‌های سایت را پاک کنی، زمین همه‌چیز را فراموش می‌کند.",
+  s5w5: "پنل «انتخاب لیول» کنار زمین — ۴ سرزمین با غذا و قانون خودشان، یا کلیدهای ۱ تا ۴.",
   helpEsc: "برای بازگشت به زمین بازی، ESC را بزن",
   aboutBtn: "درباره سازنده", aboutBack: "بازگشت به بازی", aboutKicker: "انسانِ پشت زمین بازی",
   aboutTitle: "درباره‌ی سازنده",
