@@ -195,6 +195,7 @@ export function HelpPage({ game, onClose }: { game: GameAPI; onClose: () => void
     [t.s5n2, t.s5w2],
     [t.s5n3, t.s5w3],
     [t.s5n4, t.s5w4],
+    [t.s5n5, t.s5w5],
   ];
 
   const diffOrder: DiffKey[] = ["chill", "classic", "blazing"];

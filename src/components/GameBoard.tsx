@@ -1,8 +1,9 @@
 import { useMemo } from "react";
 import type { GameAPI, Status } from "../game/useSnakeGame";
-import { DIFFICULTIES } from "../game/engine";
-import { useLang, DIFF_LABEL } from "../game/i18n";
+import { DIFFICULTIES, WORLDS } from "../game/engine";
+import { useLang, DIFF_LABEL, WORLD_LABEL } from "../game/i18n";
 import type { Dict } from "../game/i18n";
+import { WorldGlyph } from "./Panels";
 
 const PIXEL_BTN =
   "font-display text-[12px] md:text-[13px] tracking-wider text-inkdeep bg-btn px-7 py-4 clip-pixel-sm " +
@@ -59,11 +60,12 @@ function MiniSerpent() {
 export function GameBoard({ game }: { game: GameAPI }) {
   const {
     canvasRef, wrapRef, status, score, best, isNewBest, win,
-    difficulty, eaten, stars, start, togglePause,
+    difficulty, eaten, stars, world, start, togglePause,
   } = game;
 
   const { t, fmt, fa } = useLang();
   const diff = DIFFICULTIES[difficulty];
+  const wdef = WORLDS[world];
   const meta = STATUS_COLOR[status];
   const coarse = useMemo(
     () => typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches,
@@ -97,6 +99,14 @@ export function GameBoard({ game }: { game: GameAPI }) {
             <span className="font-display text-[11px] text-mint">
               {statusWord(t, status)}
             </span>
+            <span
+              className="clip-pixel-sm flex items-center gap-1.5 border px-1.5 py-1 min-[420px]:px-2"
+              style={{ borderColor: wdef.foodMain, background: `${wdef.foodMain}14`, color: wdef.foodMain }}
+              title={t[WORLD_LABEL[world]]}
+            >
+              <WorldGlyph world={world} size={13} />
+              <span className="hidden font-display text-[9px] min-[480px]:inline">{t[WORLD_LABEL[world]]}</span>
+            </span>
           </div>
           <div className="flex items-center gap-3.5 font-display text-[11px]">
             <span className="flex items-center gap-1.5 text-amber" title={t.starsWord}>
@@ -104,7 +114,7 @@ export function GameBoard({ game }: { game: GameAPI }) {
               {fmt(stars)}
             </span>
             <span style={{ color: diff.color }}>×{fmt(diff.mult)}</span>
-            <span className="text-fern">
+            <span className="max-[380px]:hidden text-fern">
               {t.lenShort} {fmt(String(length).padStart(2, "0"))}
             </span>
           </div>

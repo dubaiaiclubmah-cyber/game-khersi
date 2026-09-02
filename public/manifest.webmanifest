@@ -1,0 +1,24 @@
+{
+  "name": "SERPENT · مار — Arcade Snake",
+  "short_name": "SERPENT",
+  "description": "A bilingual arcade snake game — eat, grow, survive. 4 worlds, 3 speed tiers, medals & high scores.",
+  "start_url": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#06110c",
+  "theme_color": "#06110c",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "https://image.qwenlm.ai/generated-images/85157b97-88d6-485f-940b-1fcc96ec7ed9/_result.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

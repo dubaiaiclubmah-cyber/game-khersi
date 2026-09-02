@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { RefObject } from "react";
-import type { Cell, Dir, DiffKey } from "./engine";
+import type { Cell, Dir, DiffKey, WorldKey } from "./engine";
 import {
   DIFFICULTIES,
   DELTA,
@@ -9,6 +9,8 @@ import {
   makeSnake,
   randomFood,
   randomFree,
+  WORLDS,
+  WORLD_ORDER,
 } from "./engine";
 import { sfx, setMuted as setAudioMuted } from "./audio";
 import { activeCanvas } from "./theme";
@@ -92,6 +94,7 @@ const STAR_EVERY = 5;
 
 interface GameData {
   diff: DiffKey;
+  world: WorldKey;
   snake: Cell[];
   prev: Cell[];
   dir: Dir;
@@ -122,6 +125,7 @@ export interface GameAPI {
   best: number;
   bests: Record<DiffKey, number>;
   difficulty: DiffKey;
+  world: WorldKey;
   muted: boolean;
   isNewBest: boolean;
   win: boolean;
@@ -134,11 +138,13 @@ export interface GameAPI {
   togglePause: () => void;
   setDirection: (d: Dir) => void;
   changeDifficulty: (d: DiffKey) => void;
+  changeWorld: (w: WorldKey) => void;
   toggleMute: () => void;
 }
 
 const BEST_KEY = (d: DiffKey) => "serpent.best." + d;
 const DIFF_KEY = "serpent.difficulty";
+const WORLD_KEY = "serpent.world";
 const MUTE_KEY = "serpent.muted";
 const MEDALS_KEY = "serpent.medals";
 const HISTORY_KEY = "serpent.history";
@@ -163,6 +169,12 @@ function readInitialDifficulty(): DiffKey {
   const d = safeRead(DIFF_KEY) as DiffKey | null;
   if (d && DIFFICULTIES[d]) return d;
   return "classic";
+}
+
+function readInitialWorld(): WorldKey {
+  const w = safeRead(WORLD_KEY) as WorldKey | null;
+  if (w && WORLDS[w]) return w;
+  return "garden";
 }
 
 function loadBests(): Record<DiffKey, number> {
@@ -207,15 +219,16 @@ function loadPlays(): number {
   return Number.isFinite(v) && v > 0 ? v : 0;
 }
 
-function freshData(diff: DiffKey): GameData {
+function freshData(diff: DiffKey, world: WorldKey): GameData {
   const snake = makeSnake();
   return {
     diff,
+    world,
     snake,
     prev: snake.map((c) => ({ ...c })),
     dir: "right",
     queue: [],
-    food: randomFood(snake),
+    food: randomFood(snake, WORLDS[world].obstacles),
     star: null,
     starBorn: 0,
     stepMs: DIFFICULTIES[diff].stepMs,
@@ -261,6 +274,207 @@ const EAT_COLORS = ["#ffc94d", "#ff6b5e", "#b8f04d", "#4de3c2"];
 const DEATH_COLORS = ["#ff6b5e", "#ffc94d", "#ffffff"];
 const STAR_COLORS = ["#ffe9a8", "#ffc94d", "#ffffff"];
 
+/* ---------- per-world item painters ---------- */
+
+function drawWorldFood(
+  ctx: CanvasRenderingContext2D,
+  px: number,
+  fx: number,
+  fy: number,
+  now: number,
+  world: WorldKey
+) {
+  const wdef = WORLDS[world];
+  const pulse = 0.86 + Math.sin(now / 260) * 0.14;
+  const r = px * 0.32 * pulse;
+
+  /* glow halo */
+  const glow = ctx.createRadialGradient(fx, fy, r * 0.2, fx, fy, r * 2.7);
+  glow.addColorStop(0, wdef.foodGlow);
+  glow.addColorStop(1, wdef.foodGlow.replace(/[\d.]+\)$/, "0)"));
+  ctx.fillStyle = glow;
+  ctx.fillRect(fx - r * 2.7, fy - r * 2.7, r * 5.4, r * 5.4);
+
+  if (world === "garden") {
+    /* apple */
+    const body = ctx.createRadialGradient(fx - r * 0.35, fy - r * 0.4, r * 0.12, fx, fy, r * 1.05);
+    body.addColorStop(0, "#ffb3a6");
+    body.addColorStop(0.55, "#ff6b5e");
+    body.addColorStop(1, "#d63b2f");
+    ctx.fillStyle = body;
+    ctx.beginPath();
+    ctx.arc(fx, fy + px * 0.04, r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#7be06a";
+    ctx.beginPath();
+    ctx.ellipse(fx + r * 0.38, fy - r * 1.02, r * 0.4, r * 0.18, -0.6, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = "#8a5a33";
+    ctx.lineWidth = Math.max(1, px * 0.07);
+    ctx.beginPath();
+    ctx.moveTo(fx, fy - r * 0.82);
+    ctx.quadraticCurveTo(fx + r * 0.14, fy - r * 1.28, fx + r * 0.3, fy - r * 1.34);
+    ctx.stroke();
+  } else if (world === "ocean") {
+    /* little fish */
+    const wag = Math.sin(now / 180) * 0.12;
+    ctx.fillStyle = wdef.foodMain;
+    ctx.beginPath();
+    ctx.ellipse(fx - r * 0.15, fy, r * 1.02, r * 0.66, wag, 0, Math.PI * 2);
+    ctx.fill();
+    /* tail */
+    ctx.beginPath();
+    ctx.moveTo(fx - r * 1.05, fy);
+    ctx.lineTo(fx - r * 1.65, fy - r * 0.55);
+    ctx.lineTo(fx - r * 1.65, fy + r * 0.55);
+    ctx.closePath();
+    ctx.fill();
+    /* eye */
+    ctx.fillStyle = "#083344";
+    ctx.beginPath();
+    ctx.arc(fx + r * 0.4, fy - r * 0.14, r * 0.16, 0, Math.PI * 2);
+    ctx.fill();
+    /* shine */
+    ctx.fillStyle = "rgba(255,255,255,0.5)";
+    ctx.beginPath();
+    ctx.ellipse(fx - r * 0.2, fy - r * 0.28, r * 0.3, r * 0.13, -0.5, 0, Math.PI * 2);
+    ctx.fill();
+  } else if (world === "space") {
+    /* ringed planet */
+    const body = ctx.createRadialGradient(fx - r * 0.35, fy - r * 0.4, r * 0.1, fx, fy, r * 1.05);
+    body.addColorStop(0, "#f5d0fe");
+    body.addColorStop(0.6, "#e879f9");
+    body.addColorStop(1, "#a21caf");
+    ctx.fillStyle = body;
+    ctx.beginPath();
+    ctx.arc(fx, fy, r * 0.9, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = "#fbcfe8";
+    ctx.lineWidth = Math.max(1.4, px * 0.08);
+    ctx.beginPath();
+    ctx.ellipse(fx, fy, r * 1.5, r * 0.42, -0.45, 0, Math.PI * 2);
+    ctx.stroke();
+  } else {
+    /* micro-chip */
+    const s = r * 1.7;
+    ctx.fillStyle = "#0e7490";
+    rr(ctx, fx - s / 2, fy - s / 2, s, s, s * 0.18);
+    ctx.fill();
+    ctx.fillStyle = wdef.foodMain;
+    rr(ctx, fx - s * 0.3, fy - s * 0.3, s * 0.6, s * 0.6, s * 0.1);
+    ctx.fill();
+    /* pins */
+    ctx.strokeStyle = "#a5f3fc";
+    ctx.lineWidth = Math.max(1, px * 0.06);
+    for (let i = -1; i <= 1; i++) {
+      const off = i * s * 0.28;
+      ctx.beginPath();
+      ctx.moveTo(fx + off, fy - s / 2); ctx.lineTo(fx + off, fy - s * 0.72);
+      ctx.moveTo(fx + off, fy + s / 2); ctx.lineTo(fx + off, fy + s * 0.72);
+      ctx.moveTo(fx - s / 2, fy + off); ctx.lineTo(fx - s * 0.72, fy + off);
+      ctx.moveTo(fx + s / 2, fy + off); ctx.lineTo(fx + s * 0.72, fy + off);
+      ctx.stroke();
+    }
+  }
+}
+
+function drawWorldBonus(
+  ctx: CanvasRenderingContext2D,
+  px: number,
+  sx: number,
+  sy: number,
+  now: number,
+  remain: number,
+  world: WorldKey
+) {
+  const wdef = WORLDS[world];
+  const R = px * 0.4 * (0.9 + 0.1 * Math.sin(now / 220));
+
+  const glow = ctx.createRadialGradient(sx, sy, R * 0.2, sx, sy, R * 3);
+  glow.addColorStop(0, wdef.bonusGlow);
+  glow.addColorStop(1, wdef.bonusGlow.replace(/[\d.]+\)$/, "0)"));
+  ctx.fillStyle = glow;
+  ctx.fillRect(sx - R * 3, sy - R * 3, R * 6, R * 6);
+
+  if (world === "garden" || world === "space") {
+    /* spinning star (garden) / comet-head star (space) */
+    ctx.save();
+    ctx.translate(sx, sy);
+    ctx.rotate(now / 700);
+    ctx.beginPath();
+    for (let i = 0; i < 10; i++) {
+      const rr2 = i % 2 === 0 ? R : R * 0.46;
+      const a = (i * Math.PI) / 5 - Math.PI / 2;
+      if (i === 0) ctx.moveTo(Math.cos(a) * rr2, Math.sin(a) * rr2);
+      else ctx.lineTo(Math.cos(a) * rr2, Math.sin(a) * rr2);
+    }
+    ctx.closePath();
+    ctx.fillStyle = wdef.bonusMain;
+    ctx.shadowColor = wdef.bonusGlow;
+    ctx.shadowBlur = px * 0.5;
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.restore();
+  } else if (world === "ocean") {
+    /* pearl */
+    const body = ctx.createRadialGradient(sx - R * 0.4, sy - R * 0.45, R * 0.1, sx, sy, R);
+    body.addColorStop(0, "#ffffff");
+    body.addColorStop(0.6, "#e2e8f0");
+    body.addColorStop(1, "#94a3b8");
+    ctx.fillStyle = body;
+    ctx.shadowColor = wdef.bonusGlow;
+    ctx.shadowBlur = px * 0.5;
+    ctx.beginPath();
+    ctx.arc(sx, sy, R * 0.95, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+  } else {
+    /* golden CPU */
+    const s = R * 1.9;
+    ctx.fillStyle = wdef.bonusMain;
+    ctx.shadowColor = wdef.bonusGlow;
+    ctx.shadowBlur = px * 0.5;
+    rr(ctx, sx - s / 2, sy - s / 2, s, s, s * 0.16);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = "#92400e";
+    rr(ctx, sx - s * 0.28, sy - s * 0.28, s * 0.56, s * 0.56, s * 0.08);
+    ctx.fill();
+  }
+
+  /* countdown ring */
+  ctx.strokeStyle = wdef.bonusGlow;
+  ctx.lineWidth = Math.max(1.5, px * 0.07);
+  ctx.beginPath();
+  ctx.arc(sx, sy, px * 0.62, -Math.PI / 2, -Math.PI / 2 + remain * Math.PI * 2);
+  ctx.stroke();
+}
+
+function drawObstacle(
+  ctx: CanvasRenderingContext2D,
+  px: number,
+  c: Cell,
+  world: WorldKey
+) {
+  const wdef = WORLDS[world];
+  const x = c.x * px;
+  const y = c.y * px;
+  const pad = px * 0.1;
+  ctx.fillStyle = wdef.obstacleBase;
+  rr(ctx, x + pad, y + pad, px - pad * 2, px - pad * 2, px * 0.18);
+  ctx.fill();
+  ctx.strokeStyle = wdef.obstacleRim;
+  ctx.lineWidth = Math.max(1, px * 0.07);
+  rr(ctx, x + pad, y + pad, px - pad * 2, px - pad * 2, px * 0.18);
+  ctx.stroke();
+  /* inner detail */
+  ctx.fillStyle = wdef.obstacleRim;
+  ctx.globalAlpha = 0.35;
+  const d = px * 0.34;
+  ctx.fillRect(x + px / 2 - d / 2, y + px / 2 - d / 2, d, d);
+  ctx.globalAlpha = 1;
+}
+
 export function useSnakeGame(): GameAPI {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -275,6 +489,9 @@ export function useSnakeGame(): GameAPI {
   const [stars, setStars] = useState(0);
   const [speedPct, setSpeedPct] = useState(0);
   const [difficulty, setDifficultyState] = useState<DiffKey>(readInitialDifficulty);
+  const [world, setWorldState] = useState<WorldKey>(readInitialWorld);
+  const worldRef = useRef(world);
+  worldRef.current = world;
   const [bests, setBests] = useState<Record<DiffKey, number>>(loadBests);
   const [isNewBest, setIsNewBest] = useState(false);
   const [win, setWin] = useState(false);
@@ -283,7 +500,7 @@ export function useSnakeGame(): GameAPI {
   const [toasts, setToasts] = useState<Array<{ key: number; nameKey: string }>>([]);
   const [muted, setMutedState] = useState(() => safeRead(MUTE_KEY) === "1");
 
-  const g = useRef<GameData>(freshData(readInitialDifficulty()));
+  const g = useRef<GameData>(freshData(readInitialDifficulty(), readInitialWorld()));
   const bestsRef = useRef(bests);
   bestsRef.current = bests;
   const unlockedRef = useRef(unlockedIds);
@@ -310,7 +527,7 @@ export function useSnakeGame(): GameAPI {
   /* ---------------- actions ---------------- */
 
   const startGame = useCallback((dir: Dir = "right") => {
-    const base = freshData(g.current.diff);
+    const base = freshData(g.current.diff, g.current.world);
     /* the serpent spawns facing right — starting left would bite its own neck */
     const safeDir: Dir = dir === "left" ? "right" : dir;
     g.current = { ...base, status: "playing", dir: safeDir, acc: 0, startedAt: performance.now() };
@@ -443,16 +660,24 @@ export function useSnakeGame(): GameAPI {
 
     d.prev = d.snake.map((c) => ({ ...c }));
     const head = d.snake[0];
-    const nx = head.x + DELTA[d.dir].x;
-    const ny = head.y + DELTA[d.dir].y;
+    const wdef = WORLDS[d.world];
+    let nx = head.x + DELTA[d.dir].x;
+    let ny = head.y + DELTA[d.dir].y;
 
-    const hitWall = nx < 0 || ny < 0 || nx >= GRID || ny >= GRID;
+    /* ocean world: the serpent swims through the edges */
+    if (wdef.wrap) {
+      nx = (nx + GRID) % GRID;
+      ny = (ny + GRID) % GRID;
+    }
+
+    const hitWall = !wdef.wrap && (nx < 0 || ny < 0 || nx >= GRID || ny >= GRID);
+    const hitObstacle = wdef.obstacles.some((c) => c.x === nx && c.y === ny);
     const ate = d.food !== null && nx === d.food.x && ny === d.food.y;
     const ateStar = d.star !== null && nx === d.star.x && ny === d.star.y;
     const bodyToCheck = ate ? d.snake : d.snake.slice(0, -1);
     const hitSelf = bodyToCheck.some((c) => c.x === nx && c.y === ny);
 
-    if (hitWall || hitSelf) {
+    if (hitWall || hitObstacle || hitSelf) {
       endGame(false);
       return;
     }
@@ -468,11 +693,11 @@ export function useSnakeGame(): GameAPI {
       spawnBurst(d.food.x, d.food.y, EAT_COLORS, 12);
       popups.current.push({ x: nx + 0.5, y: ny + 0.3, txt: "+" + fmtNum(gained), color: "#ffc94d", born: now });
       sfx.eat();
-      d.food = randomFood(d.snake);
+      d.food = randomFood(d.snake, wdef.obstacles);
 
-      /* every 5 apples: a golden star appears for a short window */
+      /* every 5 items: a bonus appears for a short window */
       if (d.eaten % STAR_EVERY === 0 && d.star === null) {
-        const cell = randomFree([...d.snake, ...(d.food ? [d.food] : [])]);
+        const cell = randomFree([...d.snake, ...(d.food ? [d.food] : []), ...wdef.obstacles]);
         if (cell) {
           d.star = cell;
           d.starBorn = now;
@@ -526,7 +751,22 @@ export function useSnakeGame(): GameAPI {
   const changeDifficulty = useCallback((key: DiffKey) => {
     safeWrite(DIFF_KEY, key);
     setDifficultyState(key);
-    g.current = freshData(key);
+    g.current = freshData(key, g.current.world);
+    particles.current = [];
+    popups.current = [];
+    setStatus("menu");
+    setScore(0);
+    setEaten(0);
+    setStars(0);
+    setSpeedPct(0);
+    setWin(false);
+    setIsNewBest(false);
+  }, []);
+
+  const changeWorld = useCallback((key: WorldKey) => {
+    safeWrite(WORLD_KEY, key);
+    setWorldState(key);
+    g.current = freshData(g.current.diff, key);
     particles.current = [];
     popups.current = [];
     setStatus("menu");
@@ -588,11 +828,19 @@ export function useSnakeGame(): GameAPI {
       }
       if (k === "m" || k === "M") {
         toggleMute();
+        return;
+      }
+      /* world select: 1-4 (also Persian digits) */
+      const worldDigits = ["1", "2", "3", "4", "۱", "۲", "۳", "۴"];
+      const wi = worldDigits.indexOf(k);
+      if (wi !== -1) {
+        const key = WORLD_ORDER[wi % 4];
+        if (key && key !== g.current.world) changeWorld(key);
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [setDirection, pressPrimary, restart, toggleMute]);
+  }, [setDirection, pressPrimary, restart, toggleMute, changeWorld]);
 
   /* auto-pause when the tab hides */
   useEffect(() => {
@@ -720,77 +968,31 @@ export function useSnakeGame(): GameAPI {
     }
     ctx.globalAlpha = 1;
 
+    const wdef = WORLDS[d.world];
+
+    /* world color wash over the field */
+    if (wdef.tint) {
+      ctx.fillStyle = wdef.tint;
+      ctx.fillRect(0, 0, W, H);
+    }
+
+    /* static obstacles */
+    for (const ob of wdef.obstacles) drawObstacle(ctx, px, ob, d.world);
+
     const t = d.status === "playing" ? Math.min(1, d.acc / d.stepMs) : 1;
 
     /* food */
     if (d.food) {
-      const pulse = 0.86 + Math.sin(now / 260) * 0.14;
-      const fx = d.food.x * px + px / 2;
-      const fy = d.food.y * px + px / 2;
-      const r = px * 0.32 * pulse;
-      const glow = ctx.createRadialGradient(fx, fy, r * 0.2, fx, fy, r * 2.7);
-      glow.addColorStop(0, "rgba(255,107,94,0.5)");
-      glow.addColorStop(1, "rgba(255,107,94,0)");
-      ctx.fillStyle = glow;
-      ctx.fillRect(fx - r * 2.7, fy - r * 2.7, r * 5.4, r * 5.4);
-      const body = ctx.createRadialGradient(fx - r * 0.35, fy - r * 0.4, r * 0.12, fx, fy, r * 1.05);
-      body.addColorStop(0, "#ffb3a6");
-      body.addColorStop(0.55, "#ff6b5e");
-      body.addColorStop(1, "#d63b2f");
-      ctx.fillStyle = body;
-      ctx.beginPath();
-      ctx.arc(fx, fy + px * 0.04, r, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = "#7be06a";
-      ctx.beginPath();
-      ctx.ellipse(fx + r * 0.38, fy - r * 1.02, r * 0.4, r * 0.18, -0.6, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.strokeStyle = "#8a5a33";
-      ctx.lineWidth = Math.max(1, px * 0.07);
-      ctx.beginPath();
-      ctx.moveTo(fx, fy - r * 0.82);
-      ctx.quadraticCurveTo(fx + r * 0.14, fy - r * 1.28, fx + r * 0.3, fy - r * 1.34);
-      ctx.stroke();
+      drawWorldFood(ctx, px, d.food.x * px + px / 2, d.food.y * px + px / 2, now, d.world);
     }
 
-    /* golden star bonus */
+    /* bonus */
     if (d.star) {
       const age = now - d.starBorn;
       const remain = Math.max(0, 1 - age / STAR_TTL);
       const blinkOut = remain < 0.22 && Math.sin(now / 90) > 0;
       if (!blinkOut) {
-        const sx = d.star.x * px + px / 2;
-        const sy = d.star.y * px + px / 2;
-        const rot = now / 700;
-        const R = px * 0.4 * (0.9 + 0.1 * Math.sin(now / 220));
-        const glow = ctx.createRadialGradient(sx, sy, R * 0.2, sx, sy, R * 3);
-        glow.addColorStop(0, "rgba(255,201,77,0.55)");
-        glow.addColorStop(1, "rgba(255,201,77,0)");
-        ctx.fillStyle = glow;
-        ctx.fillRect(sx - R * 3, sy - R * 3, R * 6, R * 6);
-        ctx.save();
-        ctx.translate(sx, sy);
-        ctx.rotate(rot);
-        ctx.beginPath();
-        for (let i = 0; i < 10; i++) {
-          const rr2 = i % 2 === 0 ? R : R * 0.46;
-          const a = (i * Math.PI) / 5 - Math.PI / 2;
-          if (i === 0) ctx.moveTo(Math.cos(a) * rr2, Math.sin(a) * rr2);
-          else ctx.lineTo(Math.cos(a) * rr2, Math.sin(a) * rr2);
-        }
-        ctx.closePath();
-        ctx.fillStyle = "#ffc94d";
-        ctx.shadowColor = "rgba(255,201,77,0.8)";
-        ctx.shadowBlur = px * 0.5;
-        ctx.fill();
-        ctx.shadowBlur = 0;
-        ctx.restore();
-        /* countdown ring */
-        ctx.strokeStyle = "rgba(255,201,77,0.9)";
-        ctx.lineWidth = Math.max(1.5, px * 0.07);
-        ctx.beginPath();
-        ctx.arc(sx, sy, px * 0.62, -Math.PI / 2, -Math.PI / 2 + remain * Math.PI * 2);
-        ctx.stroke();
+        drawWorldBonus(ctx, px, d.star.x * px + px / 2, d.star.y * px + px / 2, now, remain, d.world);
       }
     }
 
@@ -799,20 +1001,33 @@ export function useSnakeGame(): GameAPI {
     const dying = d.status === "over" && !d.win;
     const blink = dying && now - d.deathAt < 1100 && Math.sin((now - d.deathAt) / 55) > 0;
 
+    const headRGB = wdef.headRGB ?? cv.headRGB;
+    const tailRGB = wdef.tailRGB ?? cv.tailRGB;
+    const headGlow = wdef.headGlow ?? cv.headGlow;
+
     for (let i = n - 1; i >= 0; i--) {
       const cur = d.snake[i];
       const pv = i < d.prev.length ? d.prev[i] : cur;
-      const rx = (pv.x + (cur.x - pv.x) * t) * px;
-      const ry = (pv.y + (cur.y - pv.y) * t) * px;
+      /* in the ocean world the body glides across the seam instead of snapping */
+      let apx = pv.x;
+      let apy = pv.y;
+      if (wdef.wrap) {
+        if (cur.x - apx > GRID / 2) apx += GRID;
+        else if (apx - cur.x > GRID / 2) apx -= GRID;
+        if (cur.y - apy > GRID / 2) apy += GRID;
+        else if (apy - cur.y > GRID / 2) apy -= GRID;
+      }
+      const rx = (apx + (cur.x - apx) * t) * px;
+      const ry = (apy + (cur.y - apy) * t) * px;
       const f = n === 1 ? 0 : i / (n - 1);
       const taper = 1 - f * 0.3;
       const size = px * (i === 0 ? 0.94 : 0.82) * taper;
       const pad = (px - size) / 2;
       if (i === 0) {
-        ctx.shadowColor = cv.headGlow;
+        ctx.shadowColor = headGlow;
         ctx.shadowBlur = px * 0.55;
       }
-      ctx.fillStyle = blink && i % 2 === 0 ? "#ff6b5e" : mix(cv.headRGB, cv.tailRGB, f);
+      ctx.fillStyle = blink && i % 2 === 0 ? "#ff6b5e" : mix(headRGB, tailRGB, f);
       rr(ctx, rx + pad, ry + pad, size, size, size * 0.34);
       ctx.fill();
       ctx.shadowBlur = 0;
@@ -987,6 +1202,7 @@ export function useSnakeGame(): GameAPI {
     best: bests[difficulty],
     bests,
     difficulty,
+    world,
     muted,
     isNewBest,
     win,
@@ -999,6 +1215,7 @@ export function useSnakeGame(): GameAPI {
     togglePause,
     setDirection,
     changeDifficulty,
+    changeWorld,
     toggleMute,
   };
 }
