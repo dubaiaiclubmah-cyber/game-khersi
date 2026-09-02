@@ -4,9 +4,9 @@ import type { Dir } from "../game/engine";
 import { useLang } from "../game/i18n";
 
 const BTN =
-  "clip-pixel-sm flex h-14 w-full items-center justify-center border border-[#2c523d] bg-[#0e2118] " +
-  "text-[#9fe8c0] transition-all duration-100 hover:bg-[#123024] active:scale-90 active:bg-[#16352a] " +
-  "active:text-[#d7f0e0] touch-manipulation select-none cursor-pointer";
+  "clip-pixel-sm flex h-14 w-full items-center justify-center border border-line2 bg-shell " +
+  "text-mint transition-all duration-100 hover:bg-hedge/40 active:scale-90 active:bg-hedge/60 " +
+  "active:text-fog touch-manipulation select-none cursor-pointer";
 
 function Chevron({ rotate }: { rotate: number }) {
   return (

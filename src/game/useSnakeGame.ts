@@ -1,9 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { RefObject } from "react";
+import type { Cell, Dir, DiffKey } from "./engine";
 import {
-  Cell,
-  Dir,
-  DiffKey,
   DIFFICULTIES,
   DELTA,
   OPPOSITE,
@@ -13,60 +11,9 @@ import {
   randomFree,
 } from "./engine";
 import { sfx, setMuted as setAudioMuted } from "./audio";
+import { activeCanvas } from "./theme";
 
 export type Status = "menu" | "playing" | "paused" | "over";
-
-interface Particle {
-  x: number;
-  y: number;
-  vx: number;
-  vy: number;
-  life: number;
-  maxLife: number;
-  size: number;
-  color: string;
-}
-
-interface FloatText {
-  x: number;
-  y: number;
-  val: number;
-  color: string;
-  life: number;
-}
-
-interface Mote {
-  x: number;
-  y: number;
-  ph: number;
-  sp: number;
-  c: string;
-}
-
-interface GameData {
-  diff: DiffKey;
-  snake: Cell[];
-  prev: Cell[];
-  dir: Dir;
-  queue: Dir[];
-  food: Cell | null;
-  bonus: Cell | null;
-  bonusLeft: number;
-  stepMs: number;
-  acc: number;
-  status: Status;
-  score: number;
-  eaten: number;
-  stars: number;
-  playMs: number;
-  maxLevel: number;
-  shake: number;
-  deathAt: number;
-  eatAt: number;
-  win: boolean;
-}
-
-/* ---------------- medals ---------------- */
 
 export type MedalKind =
   | "apple"
@@ -80,247 +27,90 @@ export type MedalKind =
   | "crown"
   | "flag";
 
-export interface RunSummary {
-  score: number;
-  eaten: number;
-  maxLevel: number;
-  playMs: number;
-  stars: number;
-  win: boolean;
-}
-
-interface CumStats {
-  games: number;
-  apples: number;
-  stars: number;
-  byDiff: Record<DiffKey, number>;
-}
-
 interface MedalDef {
   id: string;
   icon: MedalKind;
   nameKey: string;
   descKey: string;
-  test: (run: RunSummary, stats: CumStats) => boolean;
 }
 
-export interface MedalView {
-  id: string;
-  icon: MedalKind;
-  nameKey: string;
-  descKey: string;
+export interface MedalView extends MedalDef {
   unlocked: boolean;
 }
 
-export interface ToastItem {
-  key: number;
-  nameKey: string;
-}
-
 const MEDALS: MedalDef[] = [
-  { id: "bite", icon: "apple", nameKey: "m1n", descKey: "m1d", test: (_r, s) => s.apples >= 1 },
-  { id: "fan", icon: "apples", nameKey: "m2n", descKey: "m2d", test: (_r, s) => s.apples >= 25 },
-  { id: "hoard", icon: "pile", nameKey: "m3n", descKey: "m3d", test: (_r, s) => s.apples >= 100 },
-  { id: "century", icon: "coin", nameKey: "m4n", descKey: "m4d", test: (r) => r.score >= 100 },
-  { id: "treasure", icon: "coins", nameKey: "m5n", descKey: "m5d", test: (r) => r.score >= 300 },
-  { id: "overdrive", icon: "bolt", nameKey: "m6n", descKey: "m6d", test: (r) => r.maxLevel >= 5 },
-  { id: "marathon", icon: "clock", nameKey: "m7n", descKey: "m7d", test: (r) => r.playMs >= 90000 },
-  { id: "starcatch", icon: "star", nameKey: "m8n", descKey: "m8d", test: (_r, s) => s.stars >= 1 },
-  { id: "legend", icon: "crown", nameKey: "m9n", descKey: "m9d", test: (r) => r.win },
-  {
-    id: "explorer",
-    icon: "flag",
-    nameKey: "m10n",
-    descKey: "m10d",
-    test: (_r, s) => s.byDiff.chill > 0 && s.byDiff.classic > 0 && s.byDiff.blazing > 0,
-  },
+  { id: "first_bite", icon: "apple", nameKey: "mFirstBite", descKey: "dFirstBite" },
+  { id: "fruit_eater", icon: "apples", nameKey: "mFruitEater", descKey: "dFruitEater" },
+  { id: "apple_hoarder", icon: "pile", nameKey: "mAppleHoarder", descKey: "dAppleHoarder" },
+  { id: "centurion", icon: "coin", nameKey: "mCenturion", descKey: "dCenturion" },
+  { id: "treasure", icon: "coins", nameKey: "mTreasure", descKey: "dTreasure" },
+  { id: "speed_demon", icon: "bolt", nameKey: "mSpeedDemon", descKey: "dSpeedDemon" },
+  { id: "marathoner", icon: "clock", nameKey: "mMarathoner", descKey: "dMarathoner" },
+  { id: "star_hunter", icon: "star", nameKey: "mStarHunter", descKey: "dStarHunter" },
+  { id: "legend", icon: "crown", nameKey: "mLegend", descKey: "dLegend" },
+  { id: "explorer", icon: "flag", nameKey: "mExplorer", descKey: "dExplorer" },
 ];
 
-/* ---------------- storage ---------------- */
-
-const BEST_KEY = (d: DiffKey) => "serpent.best." + d;
-const DIFF_KEY = "serpent.difficulty";
-const MUTE_KEY = "serpent.muted";
-const STATS_KEY = "serpent.stats.v1";
-const MEDAL_KEY = "serpent.medals.v1";
-const HIST_KEY = "serpent.history.v1";
-
-const BONUS_TTL = 5200;
-const BONUS_VALUE = 50;
-const BONUS_EVERY = 5;
-const HISTORY_MAX = 8;
-
-function readInitialDifficulty(): DiffKey {
-  try {
-    const d = localStorage.getItem(DIFF_KEY) as DiffKey | null;
-    if (d && DIFFICULTIES[d]) return d;
-  } catch {
-    /* private mode etc. */
-  }
-  return "classic";
+interface UnlockStats {
+  score: number;
+  eaten: number;
+  stars: number;
+  best: number;
+  len: number;
+  lv: number;
+  timeSec: number;
+  totalGames: number;
 }
 
-function loadBests(): Record<DiffKey, number> {
-  const out: Record<DiffKey, number> = { chill: 0, classic: 0, blazing: 0 };
-  (Object.keys(out) as DiffKey[]).forEach((k) => {
-    try {
-      const v = Number(localStorage.getItem(BEST_KEY(k)));
-      out[k] = Number.isFinite(v) && v > 0 ? v : 0;
-    } catch {
-      out[k] = 0;
-    }
-  });
-  return out;
-}
-
-function loadStats(): CumStats {
-  try {
-    const raw = localStorage.getItem(STATS_KEY);
-    if (raw) {
-      const p = JSON.parse(raw) as Partial<CumStats>;
-      return {
-        games: Number(p.games) || 0,
-        apples: Number(p.apples) || 0,
-        stars: Number(p.stars) || 0,
-        byDiff: {
-          chill: Number(p.byDiff?.chill) || 0,
-          classic: Number(p.byDiff?.classic) || 0,
-          blazing: Number(p.byDiff?.blazing) || 0,
-        },
-      };
-    }
-  } catch {
-    /* ignore */
-  }
-  return { games: 0, apples: 0, stars: 0, byDiff: { chill: 0, classic: 0, blazing: 0 } };
-}
-
-function saveStats(s: CumStats) {
-  try {
-    localStorage.setItem(STATS_KEY, JSON.stringify(s));
-  } catch {
-    /* ignore */
+function medalEarned(id: string, s: UnlockStats): boolean {
+  switch (id) {
+    case "first_bite": return s.eaten >= 1;
+    case "fruit_eater": return s.eaten >= 10;
+    case "apple_hoarder": return s.eaten >= 25;
+    case "centurion": return s.score >= 100;
+    case "treasure": return s.score >= 300;
+    case "speed_demon": return s.lv >= 4;
+    case "marathoner": return s.timeSec >= 120;
+    case "star_hunter": return s.stars >= 1;
+    case "legend": return s.best >= 500;
+    case "explorer": return s.totalGames >= 10;
+    default: return false;
   }
 }
 
-function loadMedals(): Record<string, number> {
-  try {
-    const raw = localStorage.getItem(MEDAL_KEY);
-    if (raw) return JSON.parse(raw) as Record<string, number>;
-  } catch {
-    /* ignore */
-  }
-  return {};
+interface Particle {
+  x: number; y: number; vx: number; vy: number;
+  life: number; maxLife: number; size: number; color: string;
 }
 
-function saveMedals(m: Record<string, number>) {
-  try {
-    localStorage.setItem(MEDAL_KEY, JSON.stringify(m));
-  } catch {
-    /* ignore */
-  }
+interface Popup {
+  x: number; y: number; txt: string; color: string; born: number;
 }
 
-function loadHistory(): number[] {
-  try {
-    const raw = localStorage.getItem(HIST_KEY);
-    if (raw) {
-      const p = JSON.parse(raw);
-      if (Array.isArray(p)) return p.filter((n) => typeof n === "number").slice(-HISTORY_MAX);
-    }
-  } catch {
-    /* ignore */
-  }
-  return [];
+const STAR_TTL = 6800;
+const STAR_EVERY = 5;
+
+interface GameData {
+  diff: DiffKey;
+  snake: Cell[];
+  prev: Cell[];
+  dir: Dir;
+  queue: Dir[];
+  food: Cell | null;
+  star: Cell | null;
+  starBorn: number;
+  stepMs: number;
+  acc: number;
+  status: Status;
+  score: number;
+  eaten: number;
+  stars: number;
+  shake: number;
+  deathAt: number;
+  eatAt: number;
+  startedAt: number;
+  win: boolean;
 }
-
-function saveHistory(h: number[]) {
-  try {
-    localStorage.setItem(HIST_KEY, JSON.stringify(h));
-  } catch {
-    /* ignore */
-  }
-}
-
-function freshData(diff: DiffKey): GameData {
-  const snake = makeSnake();
-  return {
-    diff,
-    snake,
-    prev: snake.map((c) => ({ ...c })),
-    dir: "right",
-    queue: [],
-    food: randomFood(snake),
-    bonus: null,
-    bonusLeft: 0,
-    stepMs: DIFFICULTIES[diff].stepMs,
-    acc: 0,
-    status: "menu",
-    score: 0,
-    eaten: 0,
-    stars: 0,
-    playMs: 0,
-    maxLevel: 1,
-    shake: 0,
-    deathAt: 0,
-    eatAt: -9999,
-    win: false,
-  };
-}
-
-/* ---------- tiny render helpers ---------- */
-
-const HEAD_RGB = [184, 240, 77];
-const TAIL_RGB = [34, 158, 116];
-
-function mix(a: number[], b: number[], t: number): string {
-  const r = Math.round(a[0] + (b[0] - a[0]) * t);
-  const g = Math.round(a[1] + (b[1] - a[1]) * t);
-  const bl = Math.round(a[2] + (b[2] - a[2]) * t);
-  return `rgb(${r},${g},${bl})`;
-}
-
-function rr(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  w: number,
-  h: number,
-  r: number
-) {
-  const rad = Math.min(r, w / 2, h / 2);
-  ctx.beginPath();
-  ctx.moveTo(x + rad, y);
-  ctx.arcTo(x + w, y, x + w, y + h, rad);
-  ctx.arcTo(x + w, y + h, x, y + h, rad);
-  ctx.arcTo(x, y + h, x, y, rad);
-  ctx.arcTo(x, y, x + w, y, rad);
-  ctx.closePath();
-}
-
-function drawStar(
-  ctx: CanvasRenderingContext2D,
-  cx: number,
-  cy: number,
-  r: number,
-  rot: number
-) {
-  ctx.beginPath();
-  for (let i = 0; i < 10; i++) {
-    const rad = i % 2 === 0 ? r : r * 0.45;
-    const a = rot + (Math.PI / 5) * i - Math.PI / 2;
-    const x = cx + Math.cos(a) * rad;
-    const y = cy + Math.sin(a) * rad;
-    if (i === 0) ctx.moveTo(x, y);
-    else ctx.lineTo(x, y);
-  }
-  ctx.closePath();
-}
-
-const EAT_COLORS = ["#ffc94d", "#ff6b5e", "#b8f04d", "#4de3c2"];
-const DEATH_COLORS = ["#ff6b5e", "#ffc94d", "#ffffff"];
-
-/* ---------------- hook ---------------- */
 
 export interface GameAPI {
   canvasRef: RefObject<HTMLCanvasElement>;
@@ -338,7 +128,7 @@ export interface GameAPI {
   speedPct: number;
   history: number[];
   medals: MedalView[];
-  toasts: ToastItem[];
+  toasts: Array<{ key: number; nameKey: string }>;
   start: (dir?: Dir) => void;
   restart: () => void;
   togglePause: () => void;
@@ -347,13 +137,137 @@ export interface GameAPI {
   toggleMute: () => void;
 }
 
+const BEST_KEY = (d: DiffKey) => "serpent.best." + d;
+const DIFF_KEY = "serpent.difficulty";
+const MUTE_KEY = "serpent.muted";
+const MEDALS_KEY = "serpent.medals";
+const HISTORY_KEY = "serpent.history";
+const PLAYS_KEY = "serpent.plays";
+
+function safeRead(key: string): string | null {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+function safeWrite(key: string, v: string) {
+  try {
+    localStorage.setItem(key, v);
+  } catch {
+    /* ignore */
+  }
+}
+
+function readInitialDifficulty(): DiffKey {
+  const d = safeRead(DIFF_KEY) as DiffKey | null;
+  if (d && DIFFICULTIES[d]) return d;
+  return "classic";
+}
+
+function loadBests(): Record<DiffKey, number> {
+  const out: Record<DiffKey, number> = { chill: 0, classic: 0, blazing: 0 };
+  (Object.keys(out) as DiffKey[]).forEach((k) => {
+    const v = Number(safeRead(BEST_KEY(k)));
+    out[k] = Number.isFinite(v) && v > 0 ? v : 0;
+  });
+  return out;
+}
+
+function loadMedalIds(): string[] {
+  try {
+    const raw = safeRead(MEDALS_KEY);
+    if (raw) {
+      const arr = JSON.parse(raw);
+      if (Array.isArray(arr)) return arr.filter((x) => typeof x === "string");
+    }
+  } catch {
+    /* ignore */
+  }
+  return [];
+}
+
+function loadHistory(): number[] {
+  try {
+    const raw = safeRead(HISTORY_KEY);
+    if (raw) {
+      const arr = JSON.parse(raw);
+      if (Array.isArray(arr)) {
+        return arr.filter((x) => Number.isFinite(x)).slice(-8).map(Number);
+      }
+    }
+  } catch {
+    /* ignore */
+  }
+  return [];
+}
+
+function loadPlays(): number {
+  const v = Number(safeRead(PLAYS_KEY));
+  return Number.isFinite(v) && v > 0 ? v : 0;
+}
+
+function freshData(diff: DiffKey): GameData {
+  const snake = makeSnake();
+  return {
+    diff,
+    snake,
+    prev: snake.map((c) => ({ ...c })),
+    dir: "right",
+    queue: [],
+    food: randomFood(snake),
+    star: null,
+    starBorn: 0,
+    stepMs: DIFFICULTIES[diff].stepMs,
+    acc: 0,
+    status: "menu",
+    score: 0,
+    eaten: 0,
+    stars: 0,
+    shake: 0,
+    deathAt: 0,
+    eatAt: -9999,
+    startedAt: 0,
+    win: false,
+  };
+}
+
+/* ---------- tiny render helpers ---------- */
+
+const faDigits = "۰۱۲۳۴۵۶۷۸۹";
+
+function mix(a: [number, number, number], b: [number, number, number], t: number): string {
+  const r = Math.round(a[0] + (b[0] - a[0]) * t);
+  const g = Math.round(a[1] + (b[1] - a[1]) * t);
+  const bl = Math.round(a[2] + (b[2] - a[2]) * t);
+  return `rgb(${r},${g},${bl})`;
+}
+
+function rr(
+  ctx: CanvasRenderingContext2D,
+  x: number, y: number, w: number, h: number, r: number
+) {
+  const rad = Math.min(r, w / 2, h / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + rad, y);
+  ctx.arcTo(x + w, y, x + w, y + h, rad);
+  ctx.arcTo(x + w, y + h, x, y + h, rad);
+  ctx.arcTo(x, y + h, x, y, rad);
+  ctx.arcTo(x, y, x + w, y, rad);
+  ctx.closePath();
+}
+
+const EAT_COLORS = ["#ffc94d", "#ff6b5e", "#b8f04d", "#4de3c2"];
+const DEATH_COLORS = ["#ff6b5e", "#ffc94d", "#ffffff"];
+const STAR_COLORS = ["#ffe9a8", "#ffc94d", "#ffffff"];
+
 export function useSnakeGame(): GameAPI {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const metrics = useRef({ size: 0, dpr: 1, cell: 0 });
   const particles = useRef<Particle[]>([]);
-  const floats = useRef<FloatText[]>([]);
-  const motes = useRef<Mote[] | null>(null);
+  const popups = useRef<Popup[]>([]);
+  const decoys = useRef<number[]>(Array.from({ length: GRID * GRID }, (_, i) => i * 7919));
 
   const [status, setStatus] = useState<Status>("menu");
   const [score, setScore] = useState(0);
@@ -365,54 +279,32 @@ export function useSnakeGame(): GameAPI {
   const [isNewBest, setIsNewBest] = useState(false);
   const [win, setWin] = useState(false);
   const [history, setHistory] = useState<number[]>(loadHistory);
-  const [medals, setMedals] = useState<Record<string, number>>(loadMedals);
-  const [toasts, setToasts] = useState<ToastItem[]>([]);
-  const [muted, setMutedState] = useState(() => {
-    try {
-      return localStorage.getItem(MUTE_KEY) === "1";
-    } catch {
-      return false;
-    }
-  });
+  const [unlockedIds, setUnlockedIds] = useState<string[]>(loadMedalIds);
+  const [toasts, setToasts] = useState<Array<{ key: number; nameKey: string }>>([]);
+  const [muted, setMutedState] = useState(() => safeRead(MUTE_KEY) === "1");
 
   const g = useRef<GameData>(freshData(readInitialDifficulty()));
   const bestsRef = useRef(bests);
   bestsRef.current = bests;
-  const medalsRef = useRef(medals);
-  medalsRef.current = medals;
-  const statsRef = useRef<CumStats>(loadStats());
+  const unlockedRef = useRef(unlockedIds);
+  unlockedRef.current = unlockedIds;
+  const historyRef = useRef(history);
+  historyRef.current = history;
+  const playsRef = useRef(loadPlays());
+  const langFaRef = useRef(false);
+  try {
+    langFaRef.current = (localStorage.getItem("serpent.lang") || "").indexOf("fa") === 0;
+  } catch {
+    /* ignore */
+  }
 
   useEffect(() => {
     setAudioMuted(muted);
   }, [muted]);
 
-  /* ---------------- fx helpers ---------------- */
-
-  const spawnBurst = (cx: number, cy: number, colors: string[], count: number) => {
-    for (let i = 0; i < count; i++) {
-      const ang = Math.random() * Math.PI * 2;
-      const spd = 0.0022 + Math.random() * 0.0065;
-      particles.current.push({
-        x: cx + 0.5,
-        y: cy + 0.5,
-        vx: Math.cos(ang) * spd,
-        vy: Math.sin(ang) * spd,
-        life: 420 + Math.random() * 320,
-        maxLife: 740,
-        size: 0.1 + Math.random() * 0.16,
-        color: colors[Math.floor(Math.random() * colors.length)],
-      });
-    }
-    if (particles.current.length > 140) {
-      particles.current.splice(0, particles.current.length - 140);
-    }
-  };
-
-  const pushFloat = (cx: number, cy: number, val: number, color: string) => {
-    floats.current.push({ x: cx + 0.5, y: cy + 0.2, val, color, life: 820 });
-    if (floats.current.length > 20) {
-      floats.current.splice(0, floats.current.length - 20);
-    }
+  const fmtNum = (n: number) => {
+    const s = String(n);
+    return langFaRef.current ? s.replace(/\d/g, (d) => faDigits[Number(d)]) : s;
   };
 
   /* ---------------- actions ---------------- */
@@ -421,15 +313,9 @@ export function useSnakeGame(): GameAPI {
     const base = freshData(g.current.diff);
     /* the serpent spawns facing right — starting left would bite its own neck */
     const safeDir: Dir = dir === "left" ? "right" : dir;
-    g.current = { ...base, status: "playing", dir: safeDir, acc: 0 };
+    g.current = { ...base, status: "playing", dir: safeDir, acc: 0, startedAt: performance.now() };
     particles.current = [];
-    floats.current = [];
-
-    const st = statsRef.current;
-    st.games += 1;
-    st.byDiff[base.diff] += 1;
-    saveStats(st);
-
+    popups.current = [];
     setStatus("playing");
     setScore(0);
     setEaten(0);
@@ -459,8 +345,29 @@ export function useSnakeGame(): GameAPI {
     else if (g.current.status === "paused") resumeGame();
   }, [pauseGame, resumeGame]);
 
+  const spawnBurst = (cx: number, cy: number, colors: string[], count: number) => {
+    for (let i = 0; i < count; i++) {
+      const ang = Math.random() * Math.PI * 2;
+      const spd = 0.0022 + Math.random() * 0.0065;
+      particles.current.push({
+        x: cx + 0.5,
+        y: cy + 0.5,
+        vx: Math.cos(ang) * spd,
+        vy: Math.sin(ang) * spd,
+        life: 420 + Math.random() * 320,
+        maxLife: 740,
+        size: 0.1 + Math.random() * 0.16,
+        color: colors[Math.floor(Math.random() * colors.length)],
+      });
+    }
+    if (particles.current.length > 140) {
+      particles.current.splice(0, particles.current.length - 140);
+    }
+  };
+
   const endGame = useCallback((won: boolean) => {
     const d = g.current;
+    const diff = DIFFICULTIES[d.diff];
     d.status = "over";
     d.win = won;
     d.shake = 1;
@@ -473,69 +380,58 @@ export function useSnakeGame(): GameAPI {
     setWin(won);
     setStatus("over");
 
-    /* cumulative stats */
-    const st = statsRef.current;
-    st.apples += d.eaten;
-    st.stars += d.stars;
-    saveStats(st);
-
-    /* history of runs */
-    setHistory((prev) => {
-      const next = [...prev, d.score].slice(-HISTORY_MAX);
-      saveHistory(next);
-      return next;
-    });
-
-    /* medals */
-    const run: RunSummary = {
-      score: d.score,
-      eaten: d.eaten,
-      maxLevel: d.maxLevel,
-      playMs: d.playMs,
-      stars: d.stars,
-      win: won,
-    };
-    const newly = MEDALS.filter((m) => !medalsRef.current[m.id] && m.test(run, st));
-    if (newly.length > 0) {
-      setMedals((prev) => {
-        const nx = { ...prev };
-        newly.forEach((m) => {
-          nx[m.id] = Date.now();
-        });
-        saveMedals(nx);
-        return nx;
-      });
-      newly.forEach((m, i) => {
-        const key = Date.now() + i + Math.random();
-        window.setTimeout(
-          () => setToasts((prev) => [...prev, { key, nameKey: m.nameKey }]),
-          620 + i * 950
-        );
-        window.setTimeout(
-          () => setToasts((prev) => prev.filter((tt) => tt.key !== key)),
-          620 + i * 950 + 3400
-        );
-      });
-      window.setTimeout(() => sfx.record(), 650);
-    }
-
-    /* personal best for the tier */
-    if (d.score > bestsRef.current[d.diff] && d.score > 0) {
-      try {
-        localStorage.setItem(BEST_KEY(d.diff), String(d.score));
-      } catch {
-        /* ignore */
-      }
+    const newBest = d.score > bestsRef.current[d.diff] && d.score > 0;
+    if (newBest) {
+      safeWrite(BEST_KEY(d.diff), String(d.score));
       setBests((prev) => ({ ...prev, [d.diff]: d.score }));
       setIsNewBest(true);
-      if (newly.length === 0) window.setTimeout(() => sfx.record(), 350);
+      window.setTimeout(() => sfx.record(), 350);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
+    /* history + play counter */
+    const nextHistory = [...historyRef.current, d.score].slice(-8);
+    safeWrite(HISTORY_KEY, JSON.stringify(nextHistory));
+    setHistory(nextHistory);
+    playsRef.current += 1;
+    safeWrite(PLAYS_KEY, String(playsRef.current));
+
+    /* medals */
+    const pct = Math.min(1, (diff.stepMs - d.stepMs) / (diff.stepMs - diff.minMs));
+    const stats: UnlockStats = {
+      score: d.score,
+      eaten: d.eaten,
+      stars: d.stars,
+      best: Math.max(bestsRef.current[d.diff], d.score),
+      len: d.snake.length,
+      lv: 1 + Math.round(pct * 5),
+      timeSec: (performance.now() - d.startedAt) / 1000,
+      totalGames: playsRef.current,
+    };
+    const newly = MEDALS.filter(
+      (m) => !unlockedRef.current.includes(m.id) && medalEarned(m.id, stats)
+    );
+    if (newly.length > 0) {
+      const ids = [...unlockedRef.current, ...newly.map((m) => m.id)];
+      unlockedRef.current = ids;
+      setUnlockedIds(ids);
+      safeWrite(MEDALS_KEY, JSON.stringify(ids));
+      newly.forEach((m, i) => {
+        const key = Date.now() + i;
+        window.setTimeout(() => {
+          setToasts((ts) => [...ts.slice(-2), { key, nameKey: m.nameKey }]);
+          sfx.star();
+        }, 500 + i * 500);
+        window.setTimeout(() => {
+          setToasts((ts) => ts.filter((x) => x.key !== key));
+        }, 3600 + i * 500);
+      });
+    }
   }, []);
 
   const stepOnce = useCallback(() => {
     const d = g.current;
     const diff = DIFFICULTIES[d.diff];
+    const now = performance.now();
 
     while (d.queue.length > 0) {
       const next = d.queue.shift() as Dir;
@@ -552,6 +448,7 @@ export function useSnakeGame(): GameAPI {
 
     const hitWall = nx < 0 || ny < 0 || nx >= GRID || ny >= GRID;
     const ate = d.food !== null && nx === d.food.x && ny === d.food.y;
+    const ateStar = d.star !== null && nx === d.star.x && ny === d.star.y;
     const bodyToCheck = ate ? d.snake : d.snake.slice(0, -1);
     const hitSelf = bodyToCheck.some((c) => c.x === nx && c.y === ny);
 
@@ -562,50 +459,52 @@ export function useSnakeGame(): GameAPI {
 
     d.snake.unshift({ x: nx, y: ny });
 
-    /* golden star pickup */
-    if (d.bonus && nx === d.bonus.x && ny === d.bonus.y) {
-      const val = BONUS_VALUE * diff.mult;
-      d.score += val;
-      d.stars += 1;
-      d.bonus = null;
-      pushFloat(nx, ny, val, "#ffe9a8");
-      spawnBurst(nx, ny, ["#ffc94d", "#ffe9a8", "#ffffff"], 16);
-      sfx.star();
-      setScore(d.score);
-      setStars(d.stars);
-    }
-
     if (ate && d.food) {
-      const val = 10 * diff.mult;
-      d.score += val;
+      const gained = 10 * diff.mult;
+      d.score += gained;
       d.eaten += 1;
       d.stepMs = Math.max(diff.minMs, d.stepMs - diff.speedup);
-      d.eatAt = performance.now();
-      pushFloat(d.food.x, d.food.y, val, "#ffc94d");
+      d.eatAt = now;
       spawnBurst(d.food.x, d.food.y, EAT_COLORS, 12);
+      popups.current.push({ x: nx + 0.5, y: ny + 0.3, txt: "+" + fmtNum(gained), color: "#ffc94d", born: now });
       sfx.eat();
       d.food = randomFood(d.snake);
-      const pct = (diff.stepMs - d.stepMs) / (diff.stepMs - diff.minMs);
-      d.maxLevel = Math.max(d.maxLevel, Math.max(1, Math.round(pct * 6)));
+
+      /* every 5 apples: a golden star appears for a short window */
+      if (d.eaten % STAR_EVERY === 0 && d.star === null) {
+        const cell = randomFree([...d.snake, ...(d.food ? [d.food] : [])]);
+        if (cell) {
+          d.star = cell;
+          d.starBorn = now;
+        }
+      }
+
       setScore(d.score);
       setEaten(d.eaten);
-      setSpeedPct(Math.min(1, pct));
+      setSpeedPct(Math.min(1, (diff.stepMs - d.stepMs) / (diff.stepMs - diff.minMs)));
       if (d.food === null || d.snake.length >= GRID * GRID) {
         endGame(true);
         return;
       }
-      /* every Nth apple summons a golden star */
-      if (d.eaten % BONUS_EVERY === 0 && !d.bonus) {
-        const excl = d.snake.slice();
-        if (d.food) excl.push(d.food);
-        const spot = randomFree(excl);
-        if (spot) {
-          d.bonus = spot;
-          d.bonusLeft = BONUS_TTL;
-        }
-      }
     } else {
       d.snake.pop();
+    }
+
+    if (ateStar && d.star) {
+      const bonus = 50 * diff.mult;
+      d.score += bonus;
+      d.stars += 1;
+      spawnBurst(d.star.x, d.star.y, STAR_COLORS, 20);
+      popups.current.push({ x: nx + 0.5, y: ny + 0.3, txt: "+" + fmtNum(bonus), color: "#ffe9a8", born: now });
+      sfx.star();
+      d.star = null;
+      setScore(d.score);
+      setStars(d.stars);
+    }
+
+    /* star fades away */
+    if (d.star && now - d.starBorn > STAR_TTL) {
+      d.star = null;
     }
   }, [endGame]);
 
@@ -625,15 +524,11 @@ export function useSnakeGame(): GameAPI {
   );
 
   const changeDifficulty = useCallback((key: DiffKey) => {
-    try {
-      localStorage.setItem(DIFF_KEY, key);
-    } catch {
-      /* ignore */
-    }
+    safeWrite(DIFF_KEY, key);
     setDifficultyState(key);
     g.current = freshData(key);
     particles.current = [];
-    floats.current = [];
+    popups.current = [];
     setStatus("menu");
     setScore(0);
     setEaten(0);
@@ -646,11 +541,7 @@ export function useSnakeGame(): GameAPI {
   const toggleMute = useCallback(() => {
     setMutedState((m) => {
       const next = !m;
-      try {
-        localStorage.setItem(MUTE_KEY, next ? "1" : "0");
-      } catch {
-        /* ignore */
-      }
+      safeWrite(MUTE_KEY, next ? "1" : "0");
       return next;
     });
   }, []);
@@ -669,18 +560,9 @@ export function useSnakeGame(): GameAPI {
 
   useEffect(() => {
     const dirMap: Record<string, Dir> = {
-      ArrowUp: "up",
-      ArrowDown: "down",
-      ArrowLeft: "left",
-      ArrowRight: "right",
-      w: "up",
-      s: "down",
-      a: "left",
-      d: "right",
-      W: "up",
-      S: "down",
-      A: "left",
-      D: "right",
+      ArrowUp: "up", ArrowDown: "down", ArrowLeft: "left", ArrowRight: "right",
+      w: "up", s: "down", a: "left", d: "right",
+      W: "up", S: "down", A: "left", D: "right",
     };
     const onKey = (e: KeyboardEvent) => {
       const k = e.key;
@@ -745,7 +627,9 @@ export function useSnakeGame(): GameAPI {
       if (Math.abs(dx) < 22 && Math.abs(dy) < 22) return;
       moved = true;
       setDirection(
-        Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? "right" : "left") : dy > 0 ? "down" : "up"
+        Math.abs(dx) > Math.abs(dy)
+          ? dx > 0 ? "right" : "left"
+          : dy > 0 ? "down" : "up"
       );
       sx = t.clientX;
       sy = t.clientY;
@@ -803,6 +687,7 @@ export function useSnakeGame(): GameAPI {
     const px = m.cell;
     const W = canvas.width;
     const H = canvas.height;
+    const cv = activeCanvas.current;
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, W, H);
 
@@ -817,28 +702,21 @@ export function useSnakeGame(): GameAPI {
     /* board checker */
     for (let y = 0; y < GRID; y++) {
       for (let x = 0; x < GRID; x++) {
-        ctx.fillStyle = (x + y) % 2 === 0 ? "#0a1712" : "#0c1b15";
+        ctx.fillStyle = (x + y) % 2 === 0 ? cv.boardA : cv.boardB;
         ctx.fillRect(x * px, y * px, px + 0.6, px + 0.6);
       }
     }
 
-    /* ambient motes drifting inside the pit */
-    if (!motes.current) {
-      const colors = ["#4de3c2", "#b8f04d", "#ffc94d"];
-      motes.current = Array.from({ length: 8 }, (_, i) => ({
-        x: Math.random() * GRID,
-        y: Math.random() * GRID,
-        ph: Math.random() * Math.PI * 2,
-        sp: 0.6 + Math.random() * 0.8,
-        c: colors[i % colors.length],
-      }));
-    }
-    for (const mo of motes.current) {
-      const mx = ((mo.x + Math.sin(now * 0.00013 * mo.sp + mo.ph) * 1.8) + GRID * 10) % GRID;
-      const my = ((mo.y + Math.cos(now * 0.00011 * mo.sp + mo.ph) * 1.8) + GRID * 10) % GRID;
-      ctx.globalAlpha = Math.max(0.04, 0.1 + 0.08 * Math.sin(now * 0.0012 + mo.ph));
-      ctx.fillStyle = mo.c;
-      ctx.fillRect(mx * px + px * 0.36, my * px + px * 0.36, px * 0.26, px * 0.26);
+    /* drifting dew — tiny living sparkles on the field */
+    for (let i = 0; i < 14; i++) {
+      const ph = decoys.current[i] + now * 0.00006 * (10 + (i % 5));
+      const dx = ((i * 7919) % GRID) + 0.5;
+      const dy = ((i * 4391) % GRID) + 0.5;
+      const tw = 0.5 + 0.5 * Math.sin(ph * 6.283);
+      ctx.globalAlpha = 0.05 + 0.11 * tw;
+      ctx.fillStyle = "#9fe8c0";
+      const s = px * 0.07 * (0.7 + tw * 0.6);
+      ctx.fillRect(dx * px - s / 2, dy * px - s / 2, s, s);
     }
     ctx.globalAlpha = 1;
 
@@ -875,33 +753,45 @@ export function useSnakeGame(): GameAPI {
       ctx.stroke();
     }
 
-    /* golden bonus star with countdown ring */
-    if (d.bonus) {
-      const frac = Math.max(0, Math.min(1, d.bonusLeft / BONUS_TTL));
-      const bx = d.bonus.x * px + px / 2;
-      const by = d.bonus.y * px + px / 2;
-      const pulse = 0.9 + Math.sin(now / 170) * 0.12;
-      const r = px * 0.36 * pulse;
-      const low = frac < 0.24;
-      ctx.save();
-      if (low && Math.sin(now / 55) < 0) ctx.globalAlpha = 0.35;
-      const glow = ctx.createRadialGradient(bx, by, r * 0.2, bx, by, r * 2.6);
-      glow.addColorStop(0, "rgba(255,201,77,0.5)");
-      glow.addColorStop(1, "rgba(255,201,77,0)");
-      ctx.fillStyle = glow;
-      ctx.fillRect(bx - r * 2.6, by - r * 2.6, r * 5.2, r * 5.2);
-      ctx.fillStyle = "#ffc94d";
-      drawStar(ctx, bx, by, r, now / 900);
-      ctx.fill();
-      ctx.fillStyle = "#fff3d0";
-      drawStar(ctx, bx, by, r * 0.45, now / 900);
-      ctx.fill();
-      ctx.strokeStyle = "rgba(255,201,77,0.9)";
-      ctx.lineWidth = Math.max(1.5, px * 0.09);
-      ctx.beginPath();
-      ctx.arc(bx, by, px * 0.62, -Math.PI / 2, -Math.PI / 2 + frac * Math.PI * 2);
-      ctx.stroke();
-      ctx.restore();
+    /* golden star bonus */
+    if (d.star) {
+      const age = now - d.starBorn;
+      const remain = Math.max(0, 1 - age / STAR_TTL);
+      const blinkOut = remain < 0.22 && Math.sin(now / 90) > 0;
+      if (!blinkOut) {
+        const sx = d.star.x * px + px / 2;
+        const sy = d.star.y * px + px / 2;
+        const rot = now / 700;
+        const R = px * 0.4 * (0.9 + 0.1 * Math.sin(now / 220));
+        const glow = ctx.createRadialGradient(sx, sy, R * 0.2, sx, sy, R * 3);
+        glow.addColorStop(0, "rgba(255,201,77,0.55)");
+        glow.addColorStop(1, "rgba(255,201,77,0)");
+        ctx.fillStyle = glow;
+        ctx.fillRect(sx - R * 3, sy - R * 3, R * 6, R * 6);
+        ctx.save();
+        ctx.translate(sx, sy);
+        ctx.rotate(rot);
+        ctx.beginPath();
+        for (let i = 0; i < 10; i++) {
+          const rr2 = i % 2 === 0 ? R : R * 0.46;
+          const a = (i * Math.PI) / 5 - Math.PI / 2;
+          if (i === 0) ctx.moveTo(Math.cos(a) * rr2, Math.sin(a) * rr2);
+          else ctx.lineTo(Math.cos(a) * rr2, Math.sin(a) * rr2);
+        }
+        ctx.closePath();
+        ctx.fillStyle = "#ffc94d";
+        ctx.shadowColor = "rgba(255,201,77,0.8)";
+        ctx.shadowBlur = px * 0.5;
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        ctx.restore();
+        /* countdown ring */
+        ctx.strokeStyle = "rgba(255,201,77,0.9)";
+        ctx.lineWidth = Math.max(1.5, px * 0.07);
+        ctx.beginPath();
+        ctx.arc(sx, sy, px * 0.62, -Math.PI / 2, -Math.PI / 2 + remain * Math.PI * 2);
+        ctx.stroke();
+      }
     }
 
     /* snake */
@@ -919,10 +809,10 @@ export function useSnakeGame(): GameAPI {
       const size = px * (i === 0 ? 0.94 : 0.82) * taper;
       const pad = (px - size) / 2;
       if (i === 0) {
-        ctx.shadowColor = "rgba(184,240,77,0.75)";
+        ctx.shadowColor = cv.headGlow;
         ctx.shadowBlur = px * 0.55;
       }
-      ctx.fillStyle = blink && i % 2 === 0 ? "#ff6b5e" : mix(HEAD_RGB, TAIL_RGB, f);
+      ctx.fillStyle = blink && i % 2 === 0 ? "#ff6b5e" : mix(cv.headRGB, cv.tailRGB, f);
       rr(ctx, rx + pad, ry + pad, size, size, size * 0.34);
       ctx.fill();
       ctx.shadowBlur = 0;
@@ -1020,42 +910,40 @@ export function useSnakeGame(): GameAPI {
     ctx.globalAlpha = 1;
 
     /* floating score popups */
-    const faNum = document.documentElement.lang === "fa";
-    const fl = floats.current;
-    for (let i = fl.length - 1; i >= 0; i--) {
-      const fpt = fl[i];
-      fpt.life -= dt;
-      if (fpt.life <= 0) {
-        fl.splice(i, 1);
+    const pops = popups.current;
+    for (let i = pops.length - 1; i >= 0; i--) {
+      const p = pops[i];
+      const age = now - p.born;
+      if (age > 950) {
+        pops.splice(i, 1);
         continue;
       }
-      fpt.y -= dt * 0.0017;
-      ctx.globalAlpha = Math.max(0, Math.min(1, fpt.life / 420));
-      const fs = px * 0.52;
-      ctx.font = `700 ${fs}px Vazirmatn, "Space Grotesk", sans-serif`;
+      const a = 1 - age / 950;
+      const rise = (age / 950) * px * 1.1;
+      ctx.globalAlpha = Math.min(1, a * 1.6);
+      ctx.font = `700 ${Math.round(px * 0.46)}px "Space Grotesk","Vazirmatn",sans-serif`;
       ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      const txt = "+" + fpt.val.toLocaleString(faNum ? "fa-IR" : "en-US");
-      ctx.lineWidth = Math.max(2, px * 0.1);
-      ctx.strokeStyle = "rgba(4,10,7,0.85)";
-      ctx.strokeText(txt, fpt.x * px, fpt.y * px);
-      ctx.fillStyle = fpt.color;
-      ctx.fillText(txt, fpt.x * px, fpt.y * px);
+      ctx.lineWidth = Math.max(2, px * 0.09);
+      ctx.strokeStyle = "rgba(6,17,12,0.85)";
+      ctx.strokeText(p.txt, p.x * px, p.y * px - rise);
+      ctx.fillStyle = p.color;
+      ctx.fillText(p.txt, p.x * px, p.y * px - rise);
     }
     ctx.globalAlpha = 1;
-
-    /* death flash */
-    if (d.status === "over" && !d.win && now - d.deathAt < 320) {
-      ctx.fillStyle = `rgba(255,60,40,${(1 - (now - d.deathAt) / 320) * 0.22})`;
-      ctx.fillRect(0, 0, W, H);
-    }
 
     /* vignette */
     const vg = ctx.createRadialGradient(W / 2, H / 2, W * 0.34, W / 2, H / 2, W * 0.74);
     vg.addColorStop(0, "rgba(0,0,0,0)");
-    vg.addColorStop(1, "rgba(0,0,0,0.44)");
+    vg.addColorStop(1, cv.vig);
     ctx.fillStyle = vg;
     ctx.fillRect(0, 0, W, H);
+
+    /* death flash */
+    if (dying && now - d.deathAt < 260) {
+      const k = 1 - (now - d.deathAt) / 260;
+      ctx.fillStyle = `rgba(255,80,60,${(0.32 * k).toFixed(3)})`;
+      ctx.fillRect(0, 0, W, H);
+    }
   }, []);
 
   /* ---------------- main loop ---------------- */
@@ -1069,11 +957,6 @@ export function useSnakeGame(): GameAPI {
       const d = g.current;
       if (d.status === "playing") {
         d.acc += dt;
-        d.playMs += dt;
-        if (d.bonus) {
-          d.bonusLeft -= dt;
-          if (d.bonusLeft <= 0) d.bonus = null;
-        }
         let guard = 0;
         while (d.acc >= d.stepMs && d.status === "playing" && guard < 4) {
           d.acc -= d.stepMs;
@@ -1089,12 +972,9 @@ export function useSnakeGame(): GameAPI {
     return () => cancelAnimationFrame(raf);
   }, [stepOnce, render]);
 
-  const medalsView: MedalView[] = MEDALS.map((md) => ({
-    id: md.id,
-    icon: md.icon,
-    nameKey: md.nameKey,
-    descKey: md.descKey,
-    unlocked: !!medals[md.id],
+  const medals: MedalView[] = MEDALS.map((m) => ({
+    ...m,
+    unlocked: unlockedIds.includes(m.id),
   }));
 
   return {
@@ -1112,7 +992,7 @@ export function useSnakeGame(): GameAPI {
     win,
     speedPct,
     history,
-    medals: medalsView,
+    medals,
     toasts,
     start: startGame,
     restart,

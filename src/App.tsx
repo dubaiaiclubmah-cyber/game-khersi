@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSnakeGame } from "./game/useSnakeGame";
 import { LangProvider, useLang, DIFF_LABEL } from "./game/i18n";
 import type { Lang } from "./game/i18n";
+import { ThemeProvider, useTheme, PALETTES, SWATCH } from "./game/theme";
+import type { Mode, Palette } from "./game/theme";
 import { GameBoard } from "./components/GameBoard";
 import { TouchPad } from "./components/TouchPad";
 import { HelpPage } from "./components/HelpPage";
@@ -17,16 +19,16 @@ import {
   MobileInfo,
 } from "./components/Panels";
 
-/* ---------- ambient background ---------- */
+/* ---------- ambient background (theme-driven) ---------- */
 
 const FLIES = [
-  { top: "16%", left: "10%", c: "#b8f04d", d: "7s", delay: "0s", s: 5 },
-  { top: "26%", left: "86%", c: "#4de3c2", d: "9s", delay: "1.2s", s: 4 },
-  { top: "64%", left: "6%", c: "#ffc94d", d: "8s", delay: "0.6s", s: 4 },
-  { top: "78%", left: "90%", c: "#b8f04d", d: "10s", delay: "2s", s: 6 },
-  { top: "42%", left: "94%", c: "#ff6b5e", d: "7.5s", delay: "0.3s", s: 3 },
-  { top: "8%", left: "58%", c: "#4de3c2", d: "11s", delay: "1.8s", s: 3 },
-  { top: "88%", left: "38%", c: "#ffc94d", d: "9.5s", delay: "0.9s", s: 5 },
+  { top: "16%", left: "10%", c: "var(--acc1)", d: "7s", delay: "0s", s: 5 },
+  { top: "26%", left: "86%", c: "var(--acc2)", d: "9s", delay: "1.2s", s: 4 },
+  { top: "64%", left: "6%", c: "var(--acc3)", d: "8s", delay: "0.6s", s: 4 },
+  { top: "78%", left: "90%", c: "var(--acc1)", d: "10s", delay: "2s", s: 6 },
+  { top: "42%", left: "94%", c: "var(--acc4)", d: "7.5s", delay: "0.3s", s: 3 },
+  { top: "8%", left: "58%", c: "var(--acc2)", d: "11s", delay: "1.8s", s: 3 },
+  { top: "88%", left: "38%", c: "var(--acc3)", d: "9.5s", delay: "0.9s", s: 5 },
 ];
 
 function Background() {
@@ -36,27 +38,27 @@ function Background() {
         className="absolute inset-0"
         style={{
           background:
-            "radial-gradient(1100px 700px at 50% -8%, #0d2b1e 0%, rgba(13,43,30,0) 62%), #06110c",
+            "radial-gradient(1100px 700px at 50% -8%, var(--bg-grad) 0%, rgba(0,0,0,0) 62%), var(--bg)",
         }}
       />
       <div
         className="absolute -left-44 -top-44 h-[56vmax] w-[56vmax] rounded-full"
         style={{
-          background: "radial-gradient(circle, rgba(77,227,194,0.13) 0%, rgba(77,227,194,0) 62%)",
+          background: "radial-gradient(circle, var(--glow2) 0%, rgba(0,0,0,0) 62%)",
           animation: "drift-a 17s ease-in-out infinite",
         }}
       />
       <div
         className="absolute -right-52 top-1/3 h-[50vmax] w-[50vmax] rounded-full"
         style={{
-          background: "radial-gradient(circle, rgba(255,201,77,0.10) 0%, rgba(255,201,77,0) 60%)",
+          background: "radial-gradient(circle, var(--glow3) 0%, rgba(0,0,0,0) 60%)",
           animation: "drift-b 21s ease-in-out infinite",
         }}
       />
       <div
         className="absolute -bottom-56 left-1/4 h-[46vmax] w-[46vmax] rounded-full"
         style={{
-          background: "radial-gradient(circle, rgba(184,240,77,0.10) 0%, rgba(184,240,77,0) 60%)",
+          background: "radial-gradient(circle, var(--glow1) 0%, rgba(0,0,0,0) 60%)",
           animation: "drift-a 24s ease-in-out infinite reverse",
         }}
       />
@@ -65,7 +67,7 @@ function Background() {
         className="absolute inset-0"
         style={{
           backgroundImage:
-            "linear-gradient(rgba(159,232,192,0.045) 1px, transparent 1px), linear-gradient(90deg, rgba(159,232,192,0.045) 1px, transparent 1px)",
+            "linear-gradient(var(--lattice) 1px, transparent 1px), linear-gradient(90deg, var(--lattice) 1px, transparent 1px)",
           backgroundSize: "42px 42px",
           maskImage: "radial-gradient(ellipse at 50% 38%, black 28%, transparent 74%)",
           WebkitMaskImage: "radial-gradient(ellipse at 50% 38%, black 28%, transparent 74%)",
@@ -73,10 +75,11 @@ function Background() {
       />
       {/* CRT scanlines */}
       <div
-        className="absolute inset-0 opacity-[0.14]"
+        className="absolute inset-0"
         style={{
           backgroundImage:
-            "repeating-linear-gradient(0deg, rgba(0,0,0,0.55) 0px, rgba(0,0,0,0.55) 1px, transparent 1px, transparent 3px)",
+            "repeating-linear-gradient(0deg, var(--scan) 0px, var(--scan) 1px, transparent 1px, transparent 3px)",
+          opacity: 0.5,
         }}
       />
       {FLIES.map((f, i) => (
@@ -103,11 +106,11 @@ function Background() {
 function LogoSnake() {
   return (
     <svg
-      width="40"
-      height="40"
+      width="44"
+      height="44"
       viewBox="0 0 24 24"
       aria-hidden
-      className="h-8 w-8 shrink-0 sm:h-10 sm:w-10"
+      className="h-9 w-9 shrink-0 sm:h-11 sm:w-11"
       style={{ animation: "floaty 5s ease-in-out infinite" }}
     >
       <rect x="1" y="16" width="5" height="5" fill="#229e74" />
@@ -116,7 +119,7 @@ function LogoSnake() {
       <rect x="6" y="6" width="5" height="5" fill="#7fe966" />
       <rect x="11" y="6" width="5" height="5" fill="#9cf05b" />
       <rect x="16" y="6" width="6" height="5" fill="#b8f04d" />
-      <rect x="19.4" y="7.4" width="1.6" height="1.6" fill="#06110c" />
+      <rect x="19.4" y="7.4" width="1.6" height="1.6" fill="#0a1712" />
       <rect x="15" y="0" width="5" height="5" fill="#ff6b5e" />
       <rect x="17" y="-1.4" width="2.6" height="2" fill="#7be06a" />
     </svg>
@@ -125,7 +128,7 @@ function LogoSnake() {
 
 function CrownIcon() {
   return (
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
       <path d="M2 18 L4 7 L9.5 11.5 L12 4 L14.5 11.5 L20 7 L22 18 Z" />
     </svg>
   );
@@ -133,7 +136,7 @@ function CrownIcon() {
 
 function SpeakerIcon({ muted }: { muted: boolean }) {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden>
+    <svg width="19" height="19" viewBox="0 0 24 24" aria-hidden>
       <path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor" />
       {muted ? (
         <path d="M16 9l5 6M21 9l-5 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
@@ -147,12 +150,49 @@ function SpeakerIcon({ muted }: { muted: boolean }) {
   );
 }
 
+function PaletteIcon() {
+  return (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path
+        d="M12 3a9 9 0 1 0 0 18c1.6 0 2.4-1 2.2-2.2-.2-1.1.4-2.3 1.9-2.3H18a3.5 3.5 0 0 0 3.4-4.2A9 9 0 0 0 12 3z"
+        stroke="currentColor"
+        strokeWidth="2"
+      />
+      <circle cx="8" cy="10" r="1.4" fill="currentColor" />
+      <circle cx="12" cy="7.5" r="1.4" fill="currentColor" />
+      <circle cx="16" cy="10" r="1.4" fill="currentColor" />
+    </svg>
+  );
+}
+
+function SunIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <circle cx="12" cy="12" r="4.5" stroke="currentColor" strokeWidth="2.2" />
+      <path
+        d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M19.1 4.9l-1.8 1.8M6.7 17.3l-1.8 1.8"
+        stroke="currentColor"
+        strokeWidth="2.2"
+        strokeLinecap="square"
+      />
+    </svg>
+  );
+}
+
+function MoonIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+      <path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z" />
+    </svg>
+  );
+}
+
 function StarBurstIcon() {
   return (
-    <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden>
+    <svg width="15" height="15" viewBox="0 0 24 24" aria-hidden>
       <path
         d="M12 2 L14.6 8.6 L21.8 9 L16.2 13.4 L18 20.4 L12 16.4 L6 20.4 L7.8 13.4 L2.2 9 L9.4 8.6 Z"
-        fill="#ffc94d"
+        fill="currentColor"
       />
     </svg>
   );
@@ -170,10 +210,8 @@ function LangSwitch() {
         onClick={() => setLang(l)}
         aria-pressed={active}
         className={
-          "clip-pixel-sm min-w-8 px-1.5 py-1.5 font-display text-[7px] transition-all duration-150 cursor-pointer sm:min-w-9 sm:px-2 sm:text-[8px] " +
-          (active
-            ? "bg-lime text-[#0a1712] shadow-[0_0_16px_rgba(184,240,77,0.35)]"
-            : "text-fern hover:text-mint")
+          "clip-pixel-sm min-w-9 px-2 py-2 font-display text-[10px] transition-all duration-150 cursor-pointer " +
+          (active ? "bg-lime text-ink glow-lime" : "text-fern hover:text-mint")
         }
       >
         {label}
@@ -182,12 +220,116 @@ function LangSwitch() {
   };
   return (
     <div
-      className="clip-pixel-sm flex items-center gap-0.5 border border-hedge bg-[#0e2118] p-1"
+      className="clip-pixel-sm flex items-center gap-0.5 border border-hedge bg-chip p-1"
       role="group"
       aria-label={t.langLabel}
     >
       {seg("en", "EN")}
       {seg("fa", "فا")}
+    </div>
+  );
+}
+
+/* ---------- appearance picker (mode + 4 palettes) ---------- */
+
+const PALETTE_LABEL: Record<Palette, "palForest" | "palOcean" | "palEmber" | "palNight"> = {
+  forest: "palForest",
+  ocean: "palOcean",
+  ember: "palEmber",
+  night: "palNight",
+};
+
+function ThemePicker() {
+  const { t } = useLang();
+  const { mode, palette, setMode, setPalette } = useTheme();
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e: PointerEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    window.addEventListener("pointerdown", onDown);
+    return () => window.removeEventListener("pointerdown", onDown);
+  }, [open]);
+
+  const modeSeg = (m: Mode, label: string, icon: React.ReactNode) => (
+    <button
+      type="button"
+      onClick={() => setMode(m)}
+      aria-pressed={mode === m}
+      className={
+        "clip-pixel-sm flex flex-1 items-center justify-center gap-1.5 px-2 py-2 font-display text-[10px] transition-all duration-150 cursor-pointer " +
+        (mode === m ? "bg-teal text-ink" : "text-fern hover:text-mint")
+      }
+    >
+      {icon}
+      {label}
+    </button>
+  );
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+        aria-label={t.themeBtn}
+        title={t.themeBtn}
+        className={
+          "clip-pixel-sm flex h-10 items-center justify-center border transition-all duration-150 hover:-translate-y-0.5 active:translate-y-0 cursor-pointer w-10 " +
+          (open
+            ? "border-linesoft bg-chip text-lime"
+            : "border-hedge bg-chip text-teal hover:text-fog")
+        }
+      >
+        <PaletteIcon />
+      </button>
+
+      {open && (
+        <div className="panel clip-pixel absolute end-0 top-12 z-50 w-60 p-3.5 rise-in">
+          <p className="font-display text-[10px] text-mint">{t.themeBtn}</p>
+
+          <div className="mt-2.5 flex gap-1 border border-hedge bg-cell p-1 clip-pixel-sm">
+            {modeSeg("dark", t.themeDark, <MoonIcon />)}
+            {modeSeg("light", t.themeLight, <SunIcon />)}
+          </div>
+
+          <div className="mt-3 grid grid-cols-4 gap-1.5">
+            {PALETTES.map((p) => {
+              const active = palette === p;
+              const [acc, deep] = SWATCH[p];
+              return (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => setPalette(p)}
+                  aria-pressed={active}
+                  title={t[PALETTE_LABEL[p]]}
+                  className="flex cursor-pointer flex-col items-center gap-1.5"
+                >
+                  <span
+                    className="clip-pixel-sm block h-10 w-full border transition-all duration-150 hover:-translate-y-0.5"
+                    style={{
+                      background: `linear-gradient(135deg, ${deep} 0%, ${deep} 55%, ${acc} 55%, ${acc} 100%)`,
+                      borderColor: active ? acc : "var(--line)",
+                      boxShadow: active ? `0 0 14px ${acc}66` : undefined,
+                    }}
+                  />
+                  <span
+                    className={
+                      "font-display text-[8px] " + (active ? "text-fog" : "text-fern")
+                    }
+                  >
+                    {t[PALETTE_LABEL[p]]}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -198,13 +340,13 @@ function Ticker() {
   const { t } = useLang();
   const items = [...t.ticker, ...t.ticker];
   return (
-    <div className="marquee mt-8 overflow-hidden border-y border-hedge py-2.5">
+    <div className="marquee mt-8 overflow-hidden border-y border-hedge py-3">
       {/* dir stays ltr so the marquee math is identical in both languages */}
       <div className="marquee-track flex w-max items-center" dir="ltr">
         {items.map((tip, i) => (
           <span key={i} className="flex items-center">
-            <span className="px-5 font-display text-[8px] text-fern">{tip}</span>
-            <span className="text-[9px] text-lime/70">◆</span>
+            <span className="px-5 font-display text-[11px] text-fern">{tip}</span>
+            <span className="text-[11px] text-lime/70">◆</span>
           </span>
         ))}
       </div>
@@ -248,23 +390,25 @@ function Cabinet() {
           <div className="flex min-w-0 items-center gap-3">
             <LogoSnake />
             <div className="min-w-0">
-              <h1 className="truncate font-title text-lg leading-none text-lime [text-shadow:0_0_18px_rgba(184,240,77,0.45)] sm:text-2xl md:text-3xl">
+              <h1 className="truncate font-title text-2xl leading-none text-lime title-glow sm:text-3xl md:text-4xl">
                 {t.brand}
               </h1>
-              <p className="mt-2 font-display text-[6px] tracking-[0.34em] text-mint md:text-[7px]">
+              <p className="mt-2.5 font-display text-[9px] text-mint sm:text-[10px]">
                 {t.tagline}
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-1.5 sm:gap-2">
-            <div className="clip-pixel-sm hidden items-center gap-2 border border-hedge bg-[#0e2118cc] px-3 py-2 lg:flex">
-              <CrownIcon />
+            <div className="clip-pixel-sm hidden items-center gap-2 border border-hedge bg-chip px-3 py-2.5 xl:flex">
+              <span className="text-amber">
+                <CrownIcon />
+              </span>
               <div className="flex items-baseline gap-2">
-                <span className="font-display text-[7px] tracking-[0.2em] text-fern">
+                <span className="font-display text-[10px] text-fern">
                   {t[DIFF_LABEL[game.difficulty]]} · {t.best}
                 </span>
-                <span key={game.best} className="score-pop font-display text-[11px] text-amber">
+                <span key={game.best} className="score-pop font-display text-sm text-amber">
                   {fmt(game.best)}
                 </span>
               </div>
@@ -274,40 +418,41 @@ function Cabinet() {
               onClick={openHelp}
               aria-label={t.helpBtn}
               title={t.helpBtn}
-              className="clip-pixel-sm flex h-9 items-center gap-2 border border-hedge bg-[#0e2118] px-2 text-teal transition-all duration-150 hover:-translate-y-0.5 hover:text-fog active:translate-y-0 cursor-pointer sm:h-10 sm:px-3"
+              className="clip-pixel-sm flex h-10 items-center gap-2 border border-hedge bg-chip px-2.5 text-teal transition-all duration-150 hover:-translate-y-0.5 hover:text-fog active:translate-y-0 cursor-pointer sm:px-3"
             >
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
                 <path d="M4 4h9a3 3 0 0 1 3 3v13H7a3 3 0 0 1-3-3V4z" stroke="currentColor" strokeWidth="2" />
                 <path d="M16 8h4v12h-9" stroke="currentColor" strokeWidth="2" />
                 <path d="M8 9h5M8 12h5" stroke="currentColor" strokeWidth="2" strokeLinecap="square" />
               </svg>
-              <span className="hidden font-display text-[8px] tracking-[0.12em] md:inline">{t.helpBtn}</span>
+              <span className="hidden font-display text-[10px] md:inline">{t.helpBtn}</span>
             </button>
             <button
               type="button"
               onClick={openAbout}
               aria-label={t.aboutBtn}
               title={t.aboutBtn}
-              className="clip-pixel-sm flex h-9 items-center gap-2 border border-hedge bg-[#0e2118] px-2 text-amber transition-all duration-150 hover:-translate-y-0.5 hover:text-fog active:translate-y-0 cursor-pointer sm:h-10 sm:px-3"
+              className="clip-pixel-sm flex h-10 items-center gap-2 border border-hedge bg-chip px-2.5 text-amber transition-all duration-150 hover:-translate-y-0.5 hover:text-fog active:translate-y-0 cursor-pointer sm:px-3"
             >
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
                 <rect x="9" y="4" width="6" height="6" />
                 <rect x="5" y="13" width="14" height="7" />
               </svg>
-              <span className="hidden font-display text-[8px] tracking-[0.12em] md:inline">{t.aboutBtn}</span>
+              <span className="hidden font-display text-[10px] md:inline">{t.aboutBtn}</span>
             </button>
+            <ThemePicker />
             <LangSwitch />
             <button
               type="button"
               onClick={game.toggleMute}
               aria-label={game.muted ? t.unmute : t.mute}
+              title={game.muted ? t.unmute : t.mute}
               className={
-                "clip-pixel-sm flex h-9 w-9 items-center justify-center border transition-all duration-150 hover:-translate-y-0.5 active:translate-y-0 cursor-pointer sm:h-10 sm:w-10 " +
+                "clip-pixel-sm flex h-10 w-10 items-center justify-center border transition-all duration-150 hover:-translate-y-0.5 active:translate-y-0 cursor-pointer " +
                 (game.muted
-                  ? "border-hedge bg-[#0e2118] text-fern hover:text-mint"
-                  : "border-hedge bg-[#0e2118] text-lime hover:brightness-125")
+                  ? "border-hedge bg-chip text-fern hover:text-mint"
+                  : "border-hedge bg-chip text-lime hover:brightness-125 glow-lime")
               }
-              style={game.muted ? undefined : { boxShadow: "0 0 18px rgba(184,240,77,0.18)" }}
             >
               <SpeakerIcon muted={game.muted} />
             </button>
@@ -315,7 +460,7 @@ function Cabinet() {
         </header>
 
         {/* main grid */}
-        <main className="mt-6 grid flex-1 items-start gap-5 md:grid-cols-[230px_minmax(0,1fr)_230px] lg:grid-cols-[252px_minmax(0,1fr)_252px]">
+        <main className="mt-6 grid flex-1 items-start gap-5 md:grid-cols-[236px_minmax(0,1fr)_236px] lg:grid-cols-[258px_minmax(0,1fr)_258px]">
           {/* left rail */}
           <aside className="order-2 hidden flex-col gap-5 md:order-1 md:flex">
             <DifficultyPanel game={game} />
@@ -329,7 +474,7 @@ function Cabinet() {
             </div>
 
             {/* desktop quick keys */}
-            <div className="hidden flex-wrap items-center justify-center gap-x-5 gap-y-2 font-display text-[7px] tracking-[0.18em] text-fern md:flex">
+            <div className="hidden flex-wrap items-center justify-center gap-x-5 gap-y-2 font-display text-[10px] text-fern md:flex">
               <span className="flex items-center gap-1.5">
                 <kbd className="kbd">←↑↓→</kbd> {t.steer}
               </span>
@@ -349,9 +494,7 @@ function Cabinet() {
               <MobileStats game={game} />
               <MobileDifficulty game={game} />
               {coarse && <TouchPad game={game} />}
-              <p className="text-center font-display text-[7px] tracking-[0.24em] text-fern">
-                {t.swipeHint}
-              </p>
+              <p className="text-center font-display text-[10px] text-fern">{t.swipeHint}</p>
               <MobileInfo game={game} />
             </div>
           </section>
@@ -366,10 +509,10 @@ function Cabinet() {
 
         <Ticker />
 
-        <footer className="flex flex-wrap items-center justify-between gap-2 py-4 font-display text-[6px] tracking-[0.26em] text-fern/80 md:text-[7px]">
+        <footer className="flex flex-wrap items-center justify-between gap-2 py-4 font-display text-[9px] text-fern/90 sm:text-[10px]">
           <span>{t.footerLeft}</span>
           <span className="flex items-center gap-2">
-            <span className="text-mint/70">{t.footerRight}</span>
+            <span className="text-mint/80">{t.footerRight}</span>
             <span aria-hidden className="text-hedge">·</span>
             <button
               type="button"
@@ -389,10 +532,12 @@ function Cabinet() {
           return (
             <div
               key={toast.key}
-              className="toast-in clip-pixel-sm flex items-center gap-2.5 border border-amber/60 bg-[#1d1708f2] px-4 py-2.5 shadow-[0_0_26px_rgba(255,201,77,0.28)]"
+              className="toast-in clip-pixel-sm flex items-center gap-2.5 border border-amber/60 bg-chip px-4 py-3 glow-amber"
             >
-              <StarBurstIcon />
-              <span className="font-display text-[8px] text-amber">
+              <span className="text-amber">
+                <StarBurstIcon />
+              </span>
+              <span className="font-display text-[11px] text-amber">
                 {t.unlockToast.replace("{name}", T[toast.nameKey] ?? "")}
               </span>
             </div>
@@ -409,7 +554,9 @@ function Cabinet() {
 export default function App() {
   return (
     <LangProvider>
-      <Cabinet />
+      <ThemeProvider>
+        <Cabinet />
+      </ThemeProvider>
     </LangProvider>
   );
 }
