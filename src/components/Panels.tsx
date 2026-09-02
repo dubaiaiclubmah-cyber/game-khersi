@@ -1,9 +1,9 @@
 import { useState } from "react";
 import type { ReactNode } from "react";
 import type { GameAPI, MedalKind } from "../game/useSnakeGame";
-import { DIFFICULTIES } from "../game/engine";
-import type { DiffKey } from "../game/engine";
-import { useLang, DIFF_LABEL, DIFF_TAG } from "../game/i18n";
+import { DIFFICULTIES, WORLDS, WORLD_ORDER } from "../game/engine";
+import type { DiffKey, WorldKey } from "../game/engine";
+import { useLang, DIFF_LABEL, DIFF_TAG, WORLD_LABEL, WORLD_TAG } from "../game/i18n";
 
 const DIFF_ORDER: DiffKey[] = ["chill", "classic", "blazing"];
 const SEG_COLORS = ["#4de3c2", "#7fe966", "#b8f04d", "#ffc94d", "#ff9a4d", "#ff6b5e"];
@@ -33,6 +33,57 @@ function AppleGlyph({ className }: { className?: string }) {
       <ellipse cx="16" cy="5" rx="3.4" ry="1.6" fill="#7be06a" transform="rotate(-24 16 5)" />
     </svg>
   );
+}
+
+/* ---------------- pixel world glyphs ---------------- */
+
+export function WorldGlyph({ world, size = 18 }: { world: WorldKey; size?: number }) {
+  const common = { width: size, height: size, shapeRendering: "crispEdges" as const, "aria-hidden": true };
+  switch (world) {
+    case "garden":
+      return (
+        <svg {...common} viewBox="0 0 24 24">
+          <rect x="11" y="2" width="2" height="4" fill="#8a5a33" />
+          <ellipse cx="16" cy="5" rx="3.4" ry="1.6" fill="#7be06a" transform="rotate(-24 16 5)" />
+          <circle cx="12" cy="14" r="8" fill="#ff6b5e" />
+          <rect x="7" y="9" width="2" height="2" fill="#ffb3a6" />
+        </svg>
+      );
+    case "ocean":
+      return (
+        <svg {...common} viewBox="0 0 24 24">
+          <path d="M2 12 C6 6.5 14 6.5 17 12 C14 17.5 6 17.5 2 12 Z" fill="#5eead4" />
+          <path d="M17 12 L22 7.5 L20.5 12 L22 16.5 Z" fill="#0ea5e9" />
+          <circle cx="7" cy="11.2" r="1.4" fill="#0a1712" />
+        </svg>
+      );
+    case "space":
+      return (
+        <svg {...common} viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="7" fill="#e879f9" />
+          <circle cx="9.5" cy="9.5" r="2" fill="#f5d0fe" />
+          <ellipse cx="12" cy="12" rx="11" ry="3.4" fill="none" stroke="#ffd27d" strokeWidth="1.6" transform="rotate(-18 12 12)" />
+        </svg>
+      );
+    case "circuit":
+      return (
+        <svg {...common} viewBox="0 0 24 24">
+          <rect x="5" y="5" width="14" height="14" rx="2" fill="#0e7490" />
+          <rect x="9" y="9" width="6" height="6" fill="#67e8f9" />
+          <rect x="10.6" y="10.6" width="2.8" height="2.8" fill="#0a1712" />
+          <rect x="8" y="2" width="2" height="3" fill="#fbbf24" />
+          <rect x="14" y="2" width="2" height="3" fill="#fbbf24" />
+          <rect x="8" y="19" width="2" height="3" fill="#fbbf24" />
+          <rect x="14" y="19" width="2" height="3" fill="#fbbf24" />
+          <rect x="2" y="8" width="3" height="2" fill="#fbbf24" />
+          <rect x="2" y="14" width="3" height="2" fill="#fbbf24" />
+          <rect x="19" y="8" width="3" height="2" fill="#fbbf24" />
+          <rect x="19" y="14" width="3" height="2" fill="#fbbf24" />
+        </svg>
+      );
+    default:
+      return null;
+  }
 }
 
 /* ---------------- difficulty (desktop, vertical) ---------------- */
@@ -79,6 +130,53 @@ export function DifficultyPanel({ game }: { game: GameAPI }) {
         })}
       </div>
       <p className="mt-3 text-[13px] leading-snug text-fern">{t.diffNote}</p>
+    </section>
+  );
+}
+
+/* ---------------- world / level select (desktop, vertical) ---------------- */
+
+export function WorldPanel({ game }: { game: GameAPI }) {
+  const { t } = useLang();
+  return (
+    <section className="panel clip-pixel p-4">
+      <PanelTitle>{t.selectWorld}</PanelTitle>
+      <div className="mt-3 flex flex-col gap-2">
+        {WORLD_ORDER.map((key, idx) => {
+          const w = WORLDS[key];
+          const active = game.world === key;
+          return (
+            <button
+              key={key}
+              type="button"
+              onClick={() => game.changeWorld(key)}
+              className="clip-pixel-sm flex items-center gap-3 border bg-shell2 px-3 py-2.5 text-left transition-all duration-150 hover:-translate-y-0.5 hover:brightness-125 active:translate-y-0 cursor-pointer"
+              style={{
+                borderColor: active ? w.foodMain : "var(--color-hedge)",
+                boxShadow: active ? `0 0 22px ${w.foodMain}2e, inset 0 0 18px ${w.foodMain}14` : undefined,
+              }}
+            >
+              <span
+                className="clip-pixel-sm flex h-9 w-9 shrink-0 items-center justify-center border"
+                style={{ borderColor: active ? w.foodMain : "var(--color-hedge)", background: active ? `${w.foodMain}1f` : "transparent" }}
+              >
+                <WorldGlyph world={key} size={20} />
+              </span>
+              <span className="min-w-0">
+                <span
+                  className="block font-display text-[12px]"
+                  style={{ color: active ? w.foodMain : "var(--color-mint)" }}
+                >
+                  {t[WORLD_LABEL[key]]}
+                </span>
+                <span className="mt-1 block text-[12px] leading-tight text-fern">{t[WORLD_TAG[key]]}</span>
+              </span>
+              <span className="ms-auto shrink-0 font-display text-[11px] text-fern">{idx + 1}</span>
+            </button>
+          );
+        })}
+      </div>
+      <p className="mt-3 text-[13px] leading-snug text-fern">{t.worldNote}</p>
     </section>
   );
 }
@@ -468,6 +566,41 @@ export function MobileDifficulty({ game }: { game: GameAPI }) {
           </button>
         );
       })}
+    </div>
+  );
+}
+
+/* ---------------- mobile: world grid ---------------- */
+
+export function MobileWorlds({ game }: { game: GameAPI }) {
+  const { t } = useLang();
+  return (
+    <div className="w-full">
+      <p className="mb-1.5 font-display text-[10px] text-fern">{t.selectWorld}</p>
+      <div className="grid w-full grid-cols-4 gap-1.5">
+        {WORLD_ORDER.map((key) => {
+          const w = WORLDS[key];
+          const active = game.world === key;
+          return (
+            <button
+              key={key}
+              type="button"
+              onClick={() => game.changeWorld(key)}
+              aria-pressed={active}
+              className="clip-pixel-sm flex flex-col items-center gap-1.5 px-1 py-2.5 transition-all duration-150 active:scale-95 cursor-pointer"
+              style={{
+                background: active ? `${w.foodMain}1f` : "var(--color-shell2)",
+                boxShadow: active ? `inset 0 0 0 1.5px ${w.foodMain}, 0 0 14px ${w.foodMain}33` : "inset 0 0 0 1px var(--color-hedge)",
+              }}
+            >
+              <WorldGlyph world={key} size={22} />
+              <span className="font-display text-[9px]" style={{ color: active ? w.foodMain : "var(--color-mint)" }}>
+                {t[WORLD_LABEL[key]]}
+              </span>
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }

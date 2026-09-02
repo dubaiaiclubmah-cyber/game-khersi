@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import type { ReactNode } from "react";
-import type { DiffKey } from "./engine";
+import type { DiffKey, WorldKey } from "./engine";
 
 export type Lang = "en" | "fa";
 
@@ -18,6 +18,19 @@ export const DIFF_TAG: Record<DiffKey, "tagChill" | "tagClassic" | "tagBlazing">
   blazing: "tagBlazing",
 };
 
+export const WORLD_LABEL: Record<WorldKey, "worldGarden" | "worldOcean" | "worldSpace" | "worldCircuit"> = {
+  garden: "worldGarden",
+  ocean: "worldOcean",
+  space: "worldSpace",
+  circuit: "worldCircuit",
+};
+export const WORLD_TAG: Record<WorldKey, "worldTagGarden" | "worldTagOcean" | "worldTagSpace" | "worldTagCircuit"> = {
+  garden: "worldTagGarden",
+  ocean: "worldTagOcean",
+  space: "worldTagSpace",
+  circuit: "worldTagCircuit",
+};
+
 export interface Dict {
   brand: string; tagline: string; langLabel: string; ticker: string[];
   best: string; score: string; lenShort: string; length: string; lengthWord: string;
@@ -25,6 +38,9 @@ export interface Dict {
   diffChill: string; diffClassic: string; diffBlazing: string;
   tagChill: string; tagClassic: string; tagBlazing: string;
   selectSpeed: string; diffNote: string; controls: string; scoreboard: string;
+  worldGarden: string; worldOcean: string; worldSpace: string; worldCircuit: string;
+  worldTagGarden: string; worldTagOcean: string; worldTagSpace: string; worldTagCircuit: string;
+  selectWorld: string; worldNote: string; quickWorld: string;
   tempo: string; lv: string; fame: string; fameNote: string; historyTitle: string;
   medalsTitle: string; medalsNote: string; unlockToast: string;
   mFirstBite: string; dFirstBite: string; mFruitEater: string; dFruitEater: string;
@@ -57,12 +73,19 @@ export interface Dict {
 
 const EN: Dict = {
   brand: "SERPENT", tagline: "ARCADE SNAKE CABINET", langLabel: "Language",
-  ticker: ["EAT THE APPLES","GRAB THE GOLDEN STARS","AVOID THE WALLS","DON'T BITE YOURSELF","SPACE PAUSES","SWIPE TO STEER ON MOBILE","BLAZING PAYS ×3","EVERY APPLE RAISES THE TEMPO","R RESTARTS INSTANTLY","PICK YOUR PALETTE"],
+  ticker: ["EAT THE APPLES","GRAB THE GOLDEN STARS","AVOID THE WALLS","DON'T BITE YOURSELF","SPACE PAUSES","SWIPE TO STEER ON MOBILE","BLAZING PAYS ×3","EVERY APPLE RAISES THE TEMPO","R RESTARTS INSTANTLY","PICK YOUR PALETTE","4 WORLDS TO CONQUER","OCEAN LETS YOU SWIM THROUGH EDGES","CIRCUIT HIDES DEADLY CHIPS"],
   best: "BEST", score: "SCORE", lenShort: "LEN", length: "LENGTH", lengthWord: "length",
   applesLabel: "APPLES", appleOne: "apple", applesMany: "apples", starsWord: "STARS",
   diffChill: "CHILL", diffClassic: "CLASSIC", diffBlazing: "BLAZING",
   tagChill: "Slow cruise · ×1 points", tagClassic: "The 1997 Nokia pace · ×2", tagBlazing: "Full chaos · ×3 points",
   selectSpeed: "SELECT SPEED", diffNote: "Switching resets the board — your records are kept per tier.",
+  worldGarden: "GARDEN", worldOcean: "OCEAN", worldSpace: "SPACE", worldCircuit: "CIRCUIT",
+  worldTagGarden: "Apples on the lawn · walls bite",
+  worldTagOcean: "Fish & pearls · swim through the edges",
+  worldTagSpace: "Ringed planets adrift in stardust",
+  worldTagCircuit: "Silicon snacks between live chips",
+  selectWorld: "SELECT WORLD", worldNote: "Every world has its own food and rule. Keys 1–4 switch instantly.",
+  quickWorld: "WORLDS",
   controls: "CONTROLS", scoreboard: "SCOREBOARD", tempo: "TEMPO", lv: "LV",
   fame: "HALL OF FAME", fameNote: "Records live in this browser. Set a mark, then defend it.",
   historyTitle: "LAST RUNS", medalsTitle: "MEDALS",
@@ -101,6 +124,7 @@ const EN: Dict = {
     "Every apple: +10 points × your tier's multiplier, and the tempo rises.",
     "Every 5 apples a GOLDEN STAR appears. Grab it before it fades for 50× the multiplier.",
     "Hitting a wall or your own tail ends the run instantly.",
+    "Choose one of 4 worlds — the ocean lets you swim through edges, the circuit hides deadly chips.",
     "Fill the whole board and you achieve the legendary “BOARD CLEARED!” ending.",
   ],
   helpKeysTitle: "KEYBOARD", helpTouchTitle: "TOUCH",
@@ -135,12 +159,19 @@ const EN: Dict = {
 
 const FA: Dict = {
   brand: "مار", tagline: "کابین آرکید مار", langLabel: "زبان",
-  ticker: ["سیب‌ها را بخور","ستاره‌های طلایی را بگیر","مراقب دیوارها باش","دم خودت را گاز نگیر","فاصله = توقف","روی موبایل بکش","آتشین ×۳ امتیاز می‌دهد","هر سیب سرعت را بیشتر می‌کند","R شروع دوباره","پوسته‌ات را انتخاب کن"],
+  ticker: ["سیب‌ها را بخور","ستاره‌های طلایی را بگیر","مراقب دیوارها باش","دم خودت را گاز نگیر","فاصله = توقف","روی موبایل بکش","آتشین ×۳ امتیاز می‌دهد","هر سیب سرعت را بیشتر می‌کند","R شروع دوباره","پوسته‌ات را انتخاب کن","۴ لیول برای فتح کردن","دریا اجازه می‌دهد از لبه‌ها رد شوی","مدار تراشه‌های مرگبار دارد"],
   best: "رکورد", score: "امتیاز", lenShort: "طول", length: "طول", lengthWord: "طول",
   applesLabel: "سیب‌ها", appleOne: "سیب", applesMany: "سیب", starsWord: "ستاره‌ها",
   diffChill: "آرام", diffClassic: "کلاسیک", diffBlazing: "آتشین",
   tagChill: "سیر آرام · امتیاز ×۱", tagClassic: "سرعت نوکیای ۱۹۹۷ · ×۲", tagBlazing: "آشوب کامل · امتیاز ×۳",
   selectSpeed: "انتخاب سرعت", diffNote: "تغییر سطح، زمین را از نو می‌چیند — رکوردهای هر سطح برای خودشان حفظ می‌شوند.",
+  worldGarden: "باغ سیب", worldOcean: "عمق دریا", worldSpace: "کهکشان", worldCircuit: "مدار کامپیوتر",
+  worldTagGarden: "سیب‌های قرمز روی چمن · دیوارها گاز می‌گیرند",
+  worldTagOcean: "ماهی و مروارید · از لبه‌ها رد شو",
+  worldTagSpace: "سیاره‌های حلقه‌دار میان غبار ستاره‌ها",
+  worldTagCircuit: "قطعات سیلیکونی لای تراشه‌های داغ",
+  selectWorld: "انتخاب لیول", worldNote: "هر لیول غذا و قانون خودش را دارد. با کلیدهای ۱ تا ۴ عوضشان کن.",
+  quickWorld: "لیول‌ها",
   controls: "کنترل‌ها", scoreboard: "جدول امتیاز", tempo: "سرعت", lv: "سطح",
   fame: "تالار افتخار", fameNote: "رکوردها در همین مرورگر ذخیره می‌شوند. رکورد بزن و بعد ازش دفاع کن.",
   historyTitle: "بازی‌های اخیر", medalsTitle: "مدال‌ها",
@@ -179,6 +210,7 @@ const FA: Dict = {
     "هر سیب: ۱۰ امتیاز × ضریب سطح، و کمی سرعت بیشتر.",
     "هر ۵ سیب، یک ستارهٔ طلایی ظاهر می‌شود. قبل از محو شدن بگیرش: ۵۰× ضریب جایزه!",
     "خوردن به دیوار یا دم خودت بازی را همان لحظه تمام می‌کند.",
+    "یکی از ۴ لیول را انتخاب کن — دریا اجازه می‌دهد از لبه‌ها رد شوی، مدار تراشه‌های مرگبار دارد.",
     "کل زمین را پر کنی، پایان افسانه‌ای «زمین پاک شد!» را می‌بینی.",
   ],
   helpKeysTitle: "کیبورد", helpTouchTitle: "لمسی",

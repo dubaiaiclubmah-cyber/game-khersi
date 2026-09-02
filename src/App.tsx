@@ -10,12 +10,14 @@ import { HelpPage } from "./components/HelpPage";
 import { AboutPage } from "./components/AboutPage";
 import {
   DifficultyPanel,
+  WorldPanel,
   HelpPanel,
   StatsPanel,
   FamePanel,
   MedalsPanel,
   MobileStats,
   MobileDifficulty,
+  MobileWorlds,
   MobileInfo,
 } from "./components/Panels";
 
@@ -464,6 +466,7 @@ function Cabinet() {
           {/* left rail */}
           <aside className="order-2 hidden flex-col gap-5 md:order-1 md:flex">
             <DifficultyPanel game={game} />
+            <WorldPanel game={game} />
             <HelpPanel />
           </aside>
 
@@ -487,12 +490,16 @@ function Cabinet() {
               <span className="flex items-center gap-1.5">
                 <kbd className="kbd">M</kbd> {t.muteWord}
               </span>
+              <span className="flex items-center gap-1.5">
+                <kbd className="kbd">1-4</kbd> {t.quickWorld}
+              </span>
             </div>
 
             {/* mobile-only furniture */}
             <div className="flex w-full max-w-[540px] flex-col items-center gap-3 md:hidden">
               <MobileStats game={game} />
               <MobileDifficulty game={game} />
+              <MobileWorlds game={game} />
               {coarse && <TouchPad game={game} />}
               <p className="text-center font-display text-[10px] text-fern">{t.swipeHint}</p>
               <MobileInfo game={game} />

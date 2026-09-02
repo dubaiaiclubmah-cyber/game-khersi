@@ -1,8 +1,9 @@
 import { useMemo } from "react";
 import type { GameAPI, Status } from "../game/useSnakeGame";
-import { DIFFICULTIES } from "../game/engine";
-import { useLang, DIFF_LABEL } from "../game/i18n";
+import { DIFFICULTIES, WORLDS } from "../game/engine";
+import { useLang, DIFF_LABEL, WORLD_LABEL } from "../game/i18n";
 import type { Dict } from "../game/i18n";
+import { WorldGlyph } from "./Panels";
 
 const PIXEL_BTN =
   "font-display text-[12px] md:text-[13px] tracking-wider text-inkdeep bg-btn px-7 py-4 clip-pixel-sm " +
@@ -59,11 +60,12 @@ function MiniSerpent() {
 export function GameBoard({ game }: { game: GameAPI }) {
   const {
     canvasRef, wrapRef, status, score, best, isNewBest, win,
-    difficulty, eaten, stars, start, togglePause,
+    difficulty, eaten, stars, world, start, togglePause,
   } = game;
 
   const { t, fmt, fa } = useLang();
   const diff = DIFFICULTIES[difficulty];
+  const wdef = WORLDS[world];
   const meta = STATUS_COLOR[status];
   const coarse = useMemo(
     () => typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches,
@@ -96,6 +98,14 @@ export function GameBoard({ game }: { game: GameAPI }) {
             />
             <span className="font-display text-[11px] text-mint">
               {statusWord(t, status)}
+            </span>
+            <span
+              className="clip-pixel-sm hidden items-center gap-1.5 border px-2 py-1 sm:flex"
+              style={{ borderColor: wdef.foodMain, background: `${wdef.foodMain}14`, color: wdef.foodMain }}
+              title={t[WORLD_LABEL[world]]}
+            >
+              <WorldGlyph world={world} size={13} />
+              <span className="font-display text-[9px]">{t[WORLD_LABEL[world]]}</span>
             </span>
           </div>
           <div className="flex items-center gap-3.5 font-display text-[11px]">

@@ -10,6 +10,7 @@ import {
   randomFood,
   randomFree,
   WORLDS,
+  WORLD_ORDER,
 } from "./engine";
 import { sfx, setMuted as setAudioMuted } from "./audio";
 import { activeCanvas } from "./theme";
@@ -489,6 +490,8 @@ export function useSnakeGame(): GameAPI {
   const [speedPct, setSpeedPct] = useState(0);
   const [difficulty, setDifficultyState] = useState<DiffKey>(readInitialDifficulty);
   const [world, setWorldState] = useState<WorldKey>(readInitialWorld);
+  const worldRef = useRef(world);
+  worldRef.current = world;
   const [bests, setBests] = useState<Record<DiffKey, number>>(loadBests);
   const [isNewBest, setIsNewBest] = useState(false);
   const [win, setWin] = useState(false);
@@ -825,11 +828,19 @@ export function useSnakeGame(): GameAPI {
       }
       if (k === "m" || k === "M") {
         toggleMute();
+        return;
+      }
+      /* world select: 1-4 (also Persian digits) */
+      const worldDigits = ["1", "2", "3", "4", "۱", "۲", "۳", "۴"];
+      const wi = worldDigits.indexOf(k);
+      if (wi !== -1) {
+        const key = WORLD_ORDER[wi % 4];
+        if (key && key !== g.current.world) changeWorld(key);
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [setDirection, pressPrimary, restart, toggleMute]);
+  }, [setDirection, pressPrimary, restart, toggleMute, changeWorld]);
 
   /* auto-pause when the tab hides */
   useEffect(() => {
